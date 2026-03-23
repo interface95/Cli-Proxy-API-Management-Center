@@ -467,8 +467,9 @@ export function useVisualConfig() {
       const parsed = asRecord(parsedRaw) ?? {};
       const tls = asRecord(parsed.tls);
       const remoteManagement = asRecord(parsed['remote-management']);
-      const quotaExceeded = asRecord(parsed['quota-exceeded']);
-      const routing = asRecord(parsed.routing);
+        const quotaExceeded = asRecord(parsed['quota-exceeded']);
+        const routing = asRecord(parsed.routing);
+        const antigravity = asRecord(parsed.antigravity);
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
       const apiKeysStorage = resolveApiKeysStorage(parsed);
@@ -514,6 +515,8 @@ export function useVisualConfig() {
 
         routingStrategy:
           routing?.strategy === 'fill-first' ? 'fill-first' : 'round-robin',
+
+        antigravityAllowOverages: Boolean(antigravity?.['allow-overages']),
 
         payloadDefaultRules: parsePayloadRules(payload?.default),
         payloadOverrideRules: parsePayloadRules(payload?.override),
@@ -638,6 +641,11 @@ export function useVisualConfig() {
         setIntFromStringInDoc(doc, ['request-retry'], values.requestRetry);
         setIntFromStringInDoc(doc, ['max-retry-interval'], values.maxRetryInterval);
         setBooleanInDoc(doc, ['ws-auth'], values.wsAuth);
+
+        if (docHas(doc, ['antigravity']) || values.antigravityAllowOverages) {
+          ensureMapInDoc(doc, ['antigravity']);
+          doc.setIn(['antigravity', 'allow-overages'], values.antigravityAllowOverages);
+        }
 
         if (
           docHas(doc, ['quota-exceeded']) ||

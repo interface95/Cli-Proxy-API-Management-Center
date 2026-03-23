@@ -1270,6 +1270,12 @@
           "override_rules_desc": "强制覆盖请求中的参数值",
           "filter_rules": "过滤规则",
           "filter_rules_desc": "通过 JSON Path 预过滤上游请求体，自动剔除不合规/冗余参数（Request Sanitization）"
+        },
+        "antigravity": {
+          "title": "Antigravity",
+          "description": "Antigravity AI 点数和超量请求设置",
+          "allow_overages": "允许超量请求 (AI Credits)",
+          "allow_overages_desc": "启用后，当免费配额耗尽时将使用 AI Credits 继续请求。请求会自动注入 enabledCreditTypes 并重试。"
         }
       },
       "api_keys": {

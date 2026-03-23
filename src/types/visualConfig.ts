@@ -74,6 +74,7 @@ export type VisualConfigValues = {
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   routingStrategy: 'round-robin' | 'fill-first';
+  antigravityAllowOverages: boolean;
   wsAuth: boolean;
   payloadDefaultRules: PayloadRule[];
   payloadOverrideRules: PayloadRule[];
@@ -110,6 +111,7 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   routingStrategy: 'round-robin',
+  antigravityAllowOverages: false,
   wsAuth: false,
   payloadDefaultRules: [],
   payloadOverrideRules: [],

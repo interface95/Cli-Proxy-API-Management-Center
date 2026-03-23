@@ -362,6 +362,18 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
         </div>
       </ConfigSection>
 
+      <ConfigSection title={t('config_management.visual.sections.antigravity.title')} description={t('config_management.visual.sections.antigravity.description')}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <ToggleRow
+            title={t('config_management.visual.sections.antigravity.allow_overages')}
+            description={t('config_management.visual.sections.antigravity.allow_overages_desc')}
+            checked={values.antigravityAllowOverages}
+            disabled={disabled}
+            onChange={(antigravityAllowOverages) => onChange({ antigravityAllowOverages })}
+          />
+        </div>
+      </ConfigSection>
+
       <ConfigSection title={t('config_management.visual.sections.streaming.title')} description={t('config_management.visual.sections.streaming.description')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <SectionGrid>

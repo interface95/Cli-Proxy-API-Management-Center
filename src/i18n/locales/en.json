@@ -1270,6 +1270,12 @@
           "override_rules_desc": "Force override parameter values in the request",
           "filter_rules": "Filter Rules",
           "filter_rules_desc": "Pre-filter upstream request body via JSON Path, automatically remove non-compliant/redundant parameters (Request Sanitization)"
+        },
+        "antigravity": {
+          "title": "Antigravity",
+          "description": "Antigravity AI Credits and overages settings",
+          "allow_overages": "Allow AI Credits Overages",
+          "allow_overages_desc": "When enabled, AI Credits are used when the free quota is exhausted. Requests will be retried with enabledCreditTypes injected."
         }
       },
       "api_keys": {
