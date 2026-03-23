@@ -4,6 +4,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { SelectionCheckbox } from '@/components/ui/SelectionCheckbox';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import {
+  IconActivity,
   IconBot,
   IconCode,
   IconDownload,
@@ -45,6 +46,7 @@ export type AuthFileCardProps = {
   statusBarCache: Map<string, AuthFileStatusBarData>;
   onShowModels: (file: AuthFileItem) => void;
   onShowDetails: (file: AuthFileItem) => void;
+  onOpenAntigravityTest: (file: AuthFileItem) => void;
   onDownload: (name: string) => void;
   onOpenPrefixProxyEditor: (file: AuthFileItem) => void;
   onDelete: (name: string) => void;
@@ -72,6 +74,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
     statusBarCache,
     onShowModels,
     onShowDetails,
+    onOpenAntigravityTest,
     onDownload,
     onOpenPrefixProxyEditor,
     onDelete,
@@ -82,6 +85,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const fileStats = resolveAuthFileStats(file, keyStats);
   const isRuntimeOnly = isRuntimeOnlyAuthFile(file);
   const isAistudio = (file.type || '').toLowerCase() === 'aistudio';
+  const isAntigravity = (file.type || '').toLowerCase() === 'antigravity';
   const showModelsButton = !isRuntimeOnly || isAistudio;
   const typeColor = getTypeColor(file.type || 'unknown', resolvedTheme);
 
@@ -215,6 +219,18 @@ export function AuthFileCard(props: AuthFileCardProps) {
                 >
                   <IconInfo className={styles.actionIcon} size={16} />
                 </Button>
+                {isAntigravity && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onOpenAntigravityTest(file)}
+                    className={styles.iconButton}
+                    title={t('auth_files.antigravity_test_single_title')}
+                    disabled={disableControls}
+                  >
+                    <IconActivity className={styles.actionIcon} size={16} />
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   size="sm"

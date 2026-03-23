@@ -38,10 +38,17 @@ import {
 } from '@/features/authFiles/constants';
 import { AuthFileCard } from '@/features/authFiles/components/AuthFileCard';
 import { AuthFileDetailModal } from '@/features/authFiles/components/AuthFileDetailModal';
+import { AuthFilesAntigravityTestModal } from '@/features/authFiles/components/AuthFilesAntigravityTestModal';
 import { AuthFileModelsModal } from '@/features/authFiles/components/AuthFileModelsModal';
 import { AuthFilesPrefixProxyEditorModal } from '@/features/authFiles/components/AuthFilesPrefixProxyEditorModal';
 import { OAuthExcludedCard } from '@/features/authFiles/components/OAuthExcludedCard';
 import { OAuthModelAliasCard } from '@/features/authFiles/components/OAuthModelAliasCard';
+import {
+  isAntigravityAuthFile,
+  loadAntigravityModels,
+  runAntigravityMessageTest,
+  type AntigravityMessageTestResult,
+} from '@/features/authFiles/antigravityTest';
 import iconAntigravity from '@/assets/icons/antigravity.svg';
 import iconClaude from '@/assets/icons/claude.svg';
 import iconCodex from '@/assets/icons/codex.svg';
@@ -111,6 +118,16 @@ export function AuthFilesPage() {
   const [pageSizeInput, setPageSizeInput] = useState('9');
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<AuthFileItem | null>(null);
+  const [antigravityTestMode, setAntigravityTestMode] = useState<'single' | 'batch'>('single');
+  const [antigravityTestTargets, setAntigravityTestTargets] = useState<AuthFileItem[]>([]);
+  const [antigravityTestModalOpen, setAntigravityTestModalOpen] = useState(false);
+  const [antigravityModelsLoading, setAntigravityModelsLoading] = useState(false);
+  const [antigravityAvailableModels, setAntigravityAvailableModels] = useState<string[]>([]);
+  const [antigravitySelectedModel, setAntigravitySelectedModel] = useState('');
+  const [antigravityPrompt, setAntigravityPrompt] = useState('Please reply with OK only.');
+  const [antigravityTesting, setAntigravityTesting] = useState(false);
+  const [antigravitySummary, setAntigravitySummary] = useState('');
+  const [antigravityResults, setAntigravityResults] = useState<AntigravityMessageTestResult[]>([]);
   const [viewMode, setViewMode] = useState<'diagram' | 'list'>('list');
   const [sortMode, setSortMode] = useState<AuthFilesSortMode>('default');
   const [batchActionBarVisible, setBatchActionBarVisible] = useState(false);
@@ -196,6 +213,7 @@ export function AuthFilesPage() {
   )
     ? (normalizedFilter as QuotaProviderType)
     : null;
+  const antigravityFilterActive = normalizedFilter === 'antigravity';
 
   useEffect(() => {
     const persisted = readAuthFilesUiState();
@@ -372,12 +390,103 @@ export function AuthFilesPage() {
     () => pageItems.filter((file) => !isRuntimeOnlyAuthFile(file)),
     [pageItems]
   );
+  const selectableAntigravityPageItems = useMemo(
+    () => pageItems.filter((file) => !isRuntimeOnlyAuthFile(file) && isAntigravityAuthFile(file)),
+    [pageItems]
+  );
   const selectedNames = useMemo(() => Array.from(selectedFiles), [selectedFiles]);
+  const selectedAntigravityFiles = useMemo(
+    () => files.filter((file) => selectedFiles.has(file.name) && isAntigravityAuthFile(file)),
+    [files, selectedFiles]
+  );
 
   const showDetails = (file: AuthFileItem) => {
     setSelectedFile(file);
     setDetailModalOpen(true);
   };
+
+  const openAntigravityTest = useCallback(async (targets: AuthFileItem[], mode: 'single' | 'batch') => {
+    if (targets.length === 0) return;
+
+    setAntigravityTestMode(mode);
+    setAntigravityTestTargets(targets);
+    setAntigravitySummary('');
+    setAntigravityResults([]);
+    setAntigravityTesting(false);
+    setAntigravityTestModalOpen(true);
+    setAntigravityModelsLoading(true);
+
+    try {
+      const models = await loadAntigravityModels(targets);
+      setAntigravityAvailableModels(models);
+      setAntigravitySelectedModel((current) => current.trim() || models[0] || '');
+    } finally {
+      setAntigravityModelsLoading(false);
+    }
+  }, []);
+
+  const closeAntigravityTest = useCallback(() => {
+    if (antigravityTesting) return;
+    setAntigravityTestModalOpen(false);
+  }, [antigravityTesting]);
+
+  const runAntigravityTests = useCallback(async () => {
+    if (antigravityTesting) return;
+
+    const selectedModel = antigravitySelectedModel.trim();
+    if (!selectedModel) {
+      showNotification(t('auth_files.antigravity_test_model_required'), 'error');
+      return;
+    }
+
+    if (antigravityTestTargets.length === 0) {
+      showNotification(t('auth_files.antigravity_test_no_targets'), 'error');
+      return;
+    }
+
+    setAntigravityTesting(true);
+    setAntigravityResults([]);
+    setAntigravitySummary(t('auth_files.antigravity_test_running'));
+
+    const nextResults: AntigravityMessageTestResult[] = [];
+    for (const file of antigravityTestTargets) {
+      const result = await runAntigravityMessageTest(file, {
+        model: selectedModel,
+        prompt: antigravityPrompt,
+      });
+      nextResults.push(result);
+      setAntigravityResults([...nextResults]);
+    }
+
+    const successCount = nextResults.filter((result) => result.status === 'success').length;
+    const failedCount = nextResults.length - successCount;
+
+    if (failedCount === 0) {
+      const message = t('auth_files.antigravity_test_all_success', { count: successCount });
+      setAntigravitySummary(message);
+      showNotification(message, 'success');
+    } else if (successCount === 0) {
+      const message = t('auth_files.antigravity_test_all_failed', { count: failedCount });
+      setAntigravitySummary(message);
+      showNotification(message, 'error');
+    } else {
+      const message = t('auth_files.antigravity_test_all_partial', {
+        success: successCount,
+        failed: failedCount,
+      });
+      setAntigravitySummary(message);
+      showNotification(message, 'warning');
+    }
+
+    setAntigravityTesting(false);
+  }, [
+    antigravityPrompt,
+    antigravitySelectedModel,
+    antigravityTestTargets,
+    antigravityTesting,
+    showNotification,
+    t,
+  ]);
 
   const copyTextWithNotification = useCallback(
     async (text: string) => {
@@ -703,6 +812,7 @@ export function AuthFilesPage() {
                 statusBarCache={statusBarCache}
                 onShowModels={showModels}
                 onShowDetails={showDetails}
+                onOpenAntigravityTest={(file) => void openAntigravityTest([file], 'single')}
                 onDownload={handleDownload}
                 onOpenPrefixProxyEditor={openPrefixProxyEditor}
                 onDelete={handleDelete}
@@ -775,6 +885,23 @@ export function AuthFilesPage() {
         onCopyText={copyTextWithNotification}
       />
 
+      <AuthFilesAntigravityTestModal
+        open={antigravityTestModalOpen}
+        mode={antigravityTestMode}
+        targets={antigravityTestTargets}
+        availableModels={antigravityAvailableModels}
+        loadingModels={antigravityModelsLoading}
+        selectedModel={antigravitySelectedModel}
+        prompt={antigravityPrompt}
+        running={antigravityTesting}
+        summaryMessage={antigravitySummary}
+        results={antigravityResults}
+        onClose={closeAntigravityTest}
+        onModelChange={setAntigravitySelectedModel}
+        onPromptChange={setAntigravityPrompt}
+        onRun={() => void runAntigravityTests()}
+      />
+
       <AuthFileModelsModal
         open={modelsModalOpen}
         fileName={modelsFileName}
@@ -813,11 +940,27 @@ export function AuthFilesPage() {
                   >
                     {t('auth_files.batch_select_all')}
                   </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => selectAllVisible(selectableAntigravityPageItems)}
+                    disabled={!antigravityFilterActive || selectableAntigravityPageItems.length === 0}
+                  >
+                    {t('auth_files.batch_select_antigravity')}
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={deselectAll}>
                     {t('auth_files.batch_deselect')}
                   </Button>
                 </div>
                 <div className={styles.batchActionRight}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void openAntigravityTest(selectedAntigravityFiles, 'batch')}
+                    disabled={disableControls || selectedAntigravityFiles.length === 0}
+                  >
+                    {t('auth_files.antigravity_test_batch_action')}
+                  </Button>
                   <Button
                     size="sm"
                     onClick={() => batchSetStatus(selectedNames, true)}
