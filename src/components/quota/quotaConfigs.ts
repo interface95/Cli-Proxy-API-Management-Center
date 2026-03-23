@@ -723,6 +723,9 @@ const renderAntigravityItems = (
   const nodes: ReactNode[] = [];
 
   if (creditBalance !== null) {
+    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0);
+    const isUsingCredits = hasExhaustedQuota && creditBalance > 0;
+
     nodes.push(
       h(
         'div',
@@ -730,8 +733,10 @@ const renderAntigravityItems = (
         h('span', { className: styleMap.codexPlanLabel }, 'AI Credits'),
         h(
           'span',
-          { className: styleMap.codexPlanValue },
-          `$${creditBalance.toFixed(2)}`
+          { className: isUsingCredits ? styleMap.premiumPlanValue : styleMap.codexPlanValue },
+          isUsingCredits
+            ? `⚡ ${t('antigravity_quota.using_credits')} · $${creditBalance.toFixed(2)}`
+            : `$${creditBalance.toFixed(2)}`
         )
       )
     );

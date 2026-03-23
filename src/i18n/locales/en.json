@@ -618,7 +618,8 @@
     "missing_auth_index": "Auth file missing auth_index",
     "empty_models": "No quota data available",
     "refresh_button": "Refresh Quota",
-    "fetch_all": "Fetch All"
+    "fetch_all": "Fetch All",
+    "using_credits": "Using AI Credits"
   },
   "claude_quota": {
     "title": "Claude Quota",

@@ -618,7 +618,8 @@
     "missing_auth_index": "认证文件缺少 auth_index",
     "empty_models": "暂无额度数据",
     "refresh_button": "刷新额度",
-    "fetch_all": "获取全部"
+    "fetch_all": "获取全部",
+    "using_credits": "正在使用 AI 点数"
   },
   "claude_quota": {
     "title": "Claude 额度",
