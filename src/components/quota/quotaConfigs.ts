@@ -157,7 +157,7 @@ const resolveAntigravityProjectId = async (file: AuthFileItem): Promise<string> 
 const fetchAntigravityQuota = async (
   file: AuthFileItem,
   t: TFunction
-): Promise<AntigravityQuotaGroup[]> => {
+): Promise<{ groups: AntigravityQuotaGroup[]; creditBalance: number | null }> => {
   const rawAuthIndex = file['auth_index'] ?? file.authIndex;
   const authIndex = normalizeAuthIndex(rawAuthIndex);
   if (!authIndex) {
@@ -205,7 +205,29 @@ const fetchAntigravityQuota = async (
         continue;
       }
 
-      return groups;
+      let creditBalance: number | null = null;
+      try {
+        const codeAssistResult = await apiCallApi.request({
+          authIndex,
+          method: 'POST',
+          url: GEMINI_CLI_CODE_ASSIST_URL,
+          header: { ...ANTIGRAVITY_REQUEST_HEADERS },
+          data: JSON.stringify({
+            metadata: {
+              ideType: 'IDE_UNSPECIFIED',
+              platform: 'PLATFORM_UNSPECIFIED',
+              pluginType: 'GEMINI',
+            },
+          }),
+        });
+        if (codeAssistResult.statusCode >= 200 && codeAssistResult.statusCode < 300) {
+          creditBalance = resolveGeminiCliCreditBalance(
+            parseGeminiCliCodeAssistPayload(codeAssistResult.body ?? codeAssistResult.bodyText)
+          );
+        }
+      } catch { /* credits are optional */ }
+
+      return { groups, creditBalance };
     } catch (err: unknown) {
       lastError = err instanceof Error ? err.message : t('common.unknown_error');
       const status = getStatusFromError(err);
@@ -219,7 +241,7 @@ const fetchAntigravityQuota = async (
   }
 
   if (hadSuccess) {
-    return [];
+    return { groups: [], creditBalance: null };
   }
 
   throw createStatusError(lastError || t('common.unknown_error'), priorityStatus ?? lastStatus);
@@ -695,35 +717,57 @@ const renderAntigravityItems = (
   helpers: QuotaRenderHelpers
 ): ReactNode => {
   const { styles: styleMap, QuotaProgressBar } = helpers;
-  const { createElement: h } = React;
+  const { createElement: h, Fragment } = React;
   const groups = quota.groups ?? [];
+  const creditBalance = quota.creditBalance ?? null;
+  const nodes: ReactNode[] = [];
 
-  if (groups.length === 0) {
-    return h('div', { className: styleMap.quotaMessage }, t('antigravity_quota.empty_models'));
-  }
-
-  return groups.map((group) => {
-    const clamped = Math.max(0, Math.min(1, group.remainingFraction));
-    const percent = Math.round(clamped * 100);
-    const resetLabel = formatQuotaResetTime(group.resetTime);
-
-    return h(
-      'div',
-      { key: group.id, className: styleMap.quotaRow },
+  if (creditBalance !== null) {
+    nodes.push(
       h(
         'div',
-        { className: styleMap.quotaRowHeader },
-        h('span', { className: styleMap.quotaModel, title: group.models.join(', ') }, group.label),
+        { key: 'credits', className: styleMap.codexPlan },
+        h('span', { className: styleMap.codexPlanLabel }, 'AI Credits'),
+        h(
+          'span',
+          { className: styleMap.codexPlanValue },
+          `$${creditBalance.toFixed(2)}`
+        )
+      )
+    );
+  }
+
+  if (groups.length === 0) {
+    nodes.push(h('div', { key: 'empty', className: styleMap.quotaMessage }, t('antigravity_quota.empty_models')));
+    return h(Fragment, null, ...nodes);
+  }
+
+  nodes.push(
+    ...groups.map((group) => {
+      const clamped = Math.max(0, Math.min(1, group.remainingFraction));
+      const percent = Math.round(clamped * 100);
+      const resetLabel = formatQuotaResetTime(group.resetTime);
+
+      return h(
+        'div',
+        { key: group.id, className: styleMap.quotaRow },
         h(
           'div',
-          { className: styleMap.quotaMeta },
-          h('span', { className: styleMap.quotaPercent }, `${percent}%`),
-          h('span', { className: styleMap.quotaReset }, resetLabel)
-        )
-      ),
-      h(QuotaProgressBar, { percent, highThreshold: 60, mediumThreshold: 20 })
-    );
-  });
+          { className: styleMap.quotaRowHeader },
+          h('span', { className: styleMap.quotaModel, title: group.models.join(', ') }, group.label),
+          h(
+            'div',
+            { className: styleMap.quotaMeta },
+            h('span', { className: styleMap.quotaPercent }, `${percent}%`),
+            h('span', { className: styleMap.quotaReset }, resetLabel)
+          )
+        ),
+        h(QuotaProgressBar, { percent, highThreshold: 60, mediumThreshold: 20 })
+      );
+    })
+  );
+
+  return h(Fragment, null, ...nodes);
 };
 
 const PREMIUM_GEMINI_CLI_TIER_IDS = new Set(['g1-ultra-tier']);
@@ -1117,7 +1161,7 @@ export const CLAUDE_CONFIG: QuotaConfig<
   renderQuotaItems: renderClaudeItems,
 };
 
-export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, AntigravityQuotaGroup[]> = {
+export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: AntigravityQuotaGroup[]; creditBalance: number | null }> = {
   type: 'antigravity',
   i18nPrefix: 'antigravity_quota',
   cardIdleMessageKey: 'quota_management.card_idle_hint',
@@ -1125,11 +1169,12 @@ export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, AntigravityQ
   fetchQuota: fetchAntigravityQuota,
   storeSelector: (state) => state.antigravityQuota,
   storeSetter: 'setAntigravityQuota',
-  buildLoadingState: () => ({ status: 'loading', groups: [] }),
-  buildSuccessState: (groups) => ({ status: 'success', groups }),
+  buildLoadingState: () => ({ status: 'loading', groups: [], creditBalance: null }),
+  buildSuccessState: (data) => ({ status: 'success', groups: data.groups, creditBalance: data.creditBalance }),
   buildErrorState: (message, status) => ({
     status: 'error',
     groups: [],
+    creditBalance: null,
     error: message,
     errorStatus: status,
   }),
