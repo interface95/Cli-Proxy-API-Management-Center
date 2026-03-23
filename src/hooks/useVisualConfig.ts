@@ -467,9 +467,9 @@ export function useVisualConfig() {
       const parsed = asRecord(parsedRaw) ?? {};
       const tls = asRecord(parsed.tls);
       const remoteManagement = asRecord(parsed['remote-management']);
-        const quotaExceeded = asRecord(parsed['quota-exceeded']);
-        const routing = asRecord(parsed.routing);
-        const antigravity = asRecord(parsed.antigravity);
+      const quotaExceeded = asRecord(parsed['quota-exceeded']);
+      const routing = asRecord(parsed.routing);
+      const antigravity = asRecord(parsed.antigravity);
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
       const apiKeysStorage = resolveApiKeysStorage(parsed);
