@@ -642,9 +642,10 @@ export function useVisualConfig() {
         setIntFromStringInDoc(doc, ['max-retry-interval'], values.maxRetryInterval);
         setBooleanInDoc(doc, ['ws-auth'], values.wsAuth);
 
-        if (docHas(doc, ['antigravity']) || values.antigravityAllowOverages) {
-          ensureMapInDoc(doc, ['antigravity']);
-          doc.setIn(['antigravity', 'allow-overages'], values.antigravityAllowOverages);
+        ensureMapInDoc(doc, ['antigravity']);
+        doc.setIn(['antigravity', 'allow-overages'], values.antigravityAllowOverages);
+        if (!values.antigravityAllowOverages) {
+          deleteIfMapEmpty(doc, ['antigravity']);
         }
 
         if (
