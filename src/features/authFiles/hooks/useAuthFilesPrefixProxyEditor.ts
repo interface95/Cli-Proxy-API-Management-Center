@@ -18,6 +18,7 @@ export type PrefixProxyEditorField =
   | 'priority'
   | 'excludedModelsText'
   | 'disableCooling'
+  | 'allowOverages'
   | 'websocket'
   | 'note';
 
@@ -37,6 +38,7 @@ export type PrefixProxyEditorState = {
   priority: string;
   excludedModelsText: string;
   disableCooling: string;
+  allowOverages: boolean;
   websocket: boolean;
   note: string;
   noteTouched: boolean;
@@ -91,6 +93,8 @@ const buildPrefixProxyUpdatedText = (editor: PrefixProxyEditorState | null): str
   } else if ('disable_cooling' in next) {
     delete next.disable_cooling;
   }
+
+  next.allow_overages = editor.allowOverages;
 
   if (editor.isCodexFile) {
     next.websocket = editor.websocket;
@@ -157,6 +161,7 @@ export function useAuthFilesPrefixProxyEditor(
       priority: '',
       excludedModelsText: '',
       disableCooling: '',
+      allowOverages: false,
       websocket: false,
       note: '',
       noteTouched: false,
@@ -208,6 +213,7 @@ export function useAuthFilesPrefixProxyEditor(
       const priority = parsePriorityValue(json.priority);
       const excludedModels = normalizeExcludedModels(json.excluded_models);
       const disableCoolingValue = parseDisableCoolingValue(json.disable_cooling);
+      const allowOveragesValue = parseDisableCoolingValue(json.allow_overages);
       const websocketValue = parseDisableCoolingValue(json.websocket);
       const note = typeof json.note === 'string' ? json.note : '';
 
@@ -225,6 +231,7 @@ export function useAuthFilesPrefixProxyEditor(
           excludedModelsText: excludedModels.join('\n'),
           disableCooling:
             disableCoolingValue === undefined ? '' : disableCoolingValue ? 'true' : 'false',
+          allowOverages: allowOveragesValue ?? false,
           websocket: websocketValue ?? false,
           note,
           noteTouched: false,
@@ -252,6 +259,7 @@ export function useAuthFilesPrefixProxyEditor(
       if (field === 'priority') return { ...prev, priority: String(value) };
       if (field === 'excludedModelsText') return { ...prev, excludedModelsText: String(value) };
       if (field === 'disableCooling') return { ...prev, disableCooling: String(value) };
+      if (field === 'allowOverages') return { ...prev, allowOverages: Boolean(value) };
       if (field === 'note') return { ...prev, note: String(value), noteTouched: true };
       return { ...prev, websocket: Boolean(value) };
     });

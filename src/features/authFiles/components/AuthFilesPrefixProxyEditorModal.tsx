@@ -114,6 +114,16 @@ export function AuthFilesPrefixProxyEditorModal(props: AuthFilesPrefixProxyEdito
                   disabled={disableControls || editor.saving || !editor.json}
                   onChange={(e) => onChange('disableCooling', e.target.value)}
                 />
+                <div className="form-group">
+                  <label>{t('auth_files.allow_overages_label')}</label>
+                  <ToggleSwitch
+                    checked={Boolean(editor.allowOverages)}
+                    disabled={disableControls || editor.saving || !editor.json}
+                    ariaLabel={t('auth_files.allow_overages_label')}
+                    onChange={(value) => onChange('allowOverages', value)}
+                  />
+                  <div className="hint">{t('auth_files.allow_overages_hint')}</div>
+                </div>
                 <Input
                   label={t('auth_files.note_label')}
                   value={editor.note}

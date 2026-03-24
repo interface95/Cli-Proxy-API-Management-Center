@@ -118,6 +118,21 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const priorityValue = parsePriorityValue(file.priority ?? file['priority']);
   const noteValue = typeof file.note === 'string' ? file.note.trim() : '';
 
+  // Classify 403 forbidden type and extract validation URL
+  const forbiddenInfo = (() => {
+    if (!rawStatusMessage || !rawStatusMessage.includes('403')) return null;
+    const lower = rawStatusMessage.toLowerCase();
+    let type: 'validation' | 'violation' | 'forbidden' = 'forbidden';
+    if (lower.includes('validation_required') || lower.includes('verify your account') || lower.includes('validation_url')) {
+      type = 'validation';
+    } else if (lower.includes('terms of service') || lower.includes('violation')) {
+      type = 'violation';
+    }
+    const match = rawStatusMessage.match(/"validation_url"\s*:\s*"([^"]+)"/);
+    const url = match?.[1]?.replace(/\\u0026/g, '&') ?? '';
+    return { type, url };
+  })();
+
   return (
     <div
       className={`${styles.fileCard} ${providerCardClass} ${selected ? styles.fileCardSelected : ''} ${file.disabled ? styles.fileCardDisabled : ''}`}
@@ -169,11 +184,39 @@ export function AuthFileCard(props: AuthFileCardProps) {
             </div>
           )}
 
-          {rawStatusMessage && hasStatusWarning && (
+          {forbiddenInfo ? (
+            <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 500,
+                padding: '2px 6px',
+                borderRadius: 4,
+                ...(forbiddenInfo.type === 'validation'
+                  ? { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }
+                  : { background: 'rgba(239,68,68,0.15)', color: '#ef4444' })
+              }}>
+                {forbiddenInfo.type === 'validation' ? `⚠️ ${t('auth_files.forbidden_validation')}`
+                  : forbiddenInfo.type === 'violation' ? `🚫 ${t('auth_files.forbidden_violation')}`
+                  : `🔒 ${t('auth_files.forbidden_generic')}`}
+              </span>
+              {forbiddenInfo.url && (
+                <button
+                  type="button"
+                  onClick={() => { void navigator.clipboard.writeText(forbiddenInfo.url); }}
+                  style={{
+                    fontSize: 11, color: '#3b82f6', background: 'none', border: 'none',
+                    cursor: 'pointer', textDecoration: 'underline', padding: 0,
+                  }}
+                >
+                  📋 {t('auth_files.antigravity_copy_verify_link')}
+                </button>
+              )}
+            </div>
+          ) : rawStatusMessage && hasStatusWarning ? (
             <div className={styles.healthStatusMessage} title={rawStatusMessage}>
               {rawStatusMessage}
             </div>
-          )}
+          ) : null}
 
           <div className={styles.cardStats}>
             <span className={`${styles.statPill} ${styles.statSuccess}`}>

@@ -157,7 +157,7 @@ const resolveAntigravityProjectId = async (file: AuthFileItem): Promise<string> 
 const fetchAntigravityQuota = async (
   file: AuthFileItem,
   t: TFunction
-): Promise<{ groups: AntigravityQuotaGroup[]; creditBalance: number | null }> => {
+): Promise<{ groups: AntigravityQuotaGroup[]; creditBalance: number | null; modelCreditsStatus: Record<string, string> | null }> => {
   const rawAuthIndex = file['auth_index'] ?? file.authIndex;
   const authIndex = normalizeAuthIndex(rawAuthIndex);
   if (!authIndex) {
@@ -214,9 +214,7 @@ const fetchAntigravityQuota = async (
           header: { ...ANTIGRAVITY_REQUEST_HEADERS },
           data: JSON.stringify({
             metadata: {
-              ideType: 'IDE_UNSPECIFIED',
-              platform: 'PLATFORM_UNSPECIFIED',
-              pluginType: 'GEMINI',
+              ideType: 'ANTIGRAVITY',
             },
           }),
         });
@@ -227,7 +225,13 @@ const fetchAntigravityQuota = async (
         }
       } catch { /* credits are optional */ }
 
-      return { groups, creditBalance };
+      // Read model-level AI Credits usage status from auth file entry (set by backend executor)
+      const rawCreditsStatus = file['model_credits_status'] ?? file['modelCreditsStatus'];
+      const modelCreditsStatus = (rawCreditsStatus && typeof rawCreditsStatus === 'object' && !Array.isArray(rawCreditsStatus))
+        ? rawCreditsStatus as Record<string, string>
+        : null;
+
+      return { groups, creditBalance, modelCreditsStatus };
     } catch (err: unknown) {
       lastError = err instanceof Error ? err.message : t('common.unknown_error');
       const status = getStatusFromError(err);
@@ -241,7 +245,7 @@ const fetchAntigravityQuota = async (
   }
 
   if (hadSuccess) {
-    return { groups: [], creditBalance: null };
+    return { groups: [], creditBalance: null, modelCreditsStatus: null };
   }
 
   throw createStatusError(lastError || t('common.unknown_error'), priorityStatus ?? lastStatus);
@@ -723,21 +727,34 @@ const renderAntigravityItems = (
   const nodes: ReactNode[] = [];
 
   if (creditBalance !== null) {
-    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0);
-    const isUsingCredits = hasExhaustedQuota && creditBalance > 0;
+    const CREDITS_TOTAL = 25000;
+    const remaining = Math.max(0, Math.min(CREDITS_TOTAL, creditBalance));
+    const percent = Math.round((remaining / CREDITS_TOTAL) * 100);
+    // Detect active AI Credits usage: either from backend executor tracking or from quota fractions
+    const hasActiveCreditsFromExecutor = Object.keys(quota.modelCreditsStatus ?? {}).length > 0;
+    // Google API reports 0.2 (20%) when quota is actually exhausted (429), so treat <= 0.2 as exhausted
+    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0.2);
+    const isUsingCredits = (hasExhaustedQuota || hasActiveCreditsFromExecutor) && creditBalance > 0;
+    const label = isUsingCredits
+      ? `⚡ ${t('antigravity_quota.using_credits')}`
+      : 'AI Credits';
 
     nodes.push(
       h(
         'div',
-        { key: 'credits', className: styleMap.codexPlan },
-        h('span', { className: styleMap.codexPlanLabel }, 'AI Credits'),
+        { key: 'credits', className: styleMap.quotaRow },
         h(
-          'span',
-          { className: isUsingCredits ? styleMap.premiumPlanValue : styleMap.codexPlanValue },
-          isUsingCredits
-            ? `⚡ ${t('antigravity_quota.using_credits')} · $${creditBalance.toFixed(2)}`
-            : `$${creditBalance.toFixed(2)}`
-        )
+          'div',
+          { className: styleMap.quotaRowHeader },
+          h('span', { className: isUsingCredits ? styleMap.premiumPlanValue : styleMap.quotaModel }, label),
+          h(
+            'div',
+            { className: styleMap.quotaMeta },
+            h('span', { className: styleMap.quotaPercent }, `${percent}%`),
+            h('span', { className: styleMap.quotaReset }, `$${creditBalance.toFixed(0)} / $${CREDITS_TOTAL}`)
+          )
+        ),
+        h(QuotaProgressBar, { percent, highThreshold: 60, mediumThreshold: 20 })
       )
     );
   }
@@ -1166,7 +1183,7 @@ export const CLAUDE_CONFIG: QuotaConfig<
   renderQuotaItems: renderClaudeItems,
 };
 
-export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: AntigravityQuotaGroup[]; creditBalance: number | null }> = {
+export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: AntigravityQuotaGroup[]; creditBalance: number | null; modelCreditsStatus: Record<string, string> | null }> = {
   type: 'antigravity',
   i18nPrefix: 'antigravity_quota',
   cardIdleMessageKey: 'quota_management.card_idle_hint',
@@ -1174,12 +1191,13 @@ export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: An
   fetchQuota: fetchAntigravityQuota,
   storeSelector: (state) => state.antigravityQuota,
   storeSetter: 'setAntigravityQuota',
-  buildLoadingState: () => ({ status: 'loading', groups: [], creditBalance: null }),
-  buildSuccessState: (data) => ({ status: 'success', groups: data.groups, creditBalance: data.creditBalance }),
+  buildLoadingState: () => ({ status: 'loading', groups: [], creditBalance: null, modelCreditsStatus: null }),
+  buildSuccessState: (data) => ({ status: 'success', groups: data.groups, creditBalance: data.creditBalance, modelCreditsStatus: data.modelCreditsStatus }),
   buildErrorState: (message, status) => ({
     status: 'error',
     groups: [],
     creditBalance: null,
+    modelCreditsStatus: null,
     error: message,
     errorStatus: status,
   }),

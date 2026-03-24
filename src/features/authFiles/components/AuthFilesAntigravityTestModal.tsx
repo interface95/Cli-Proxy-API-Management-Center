@@ -13,13 +13,11 @@ type AuthFilesAntigravityTestModalProps = {
   availableModels: string[];
   loadingModels: boolean;
   selectedModel: string;
-  prompt: string;
   running: boolean;
   summaryMessage: string;
   results: AntigravityMessageTestResult[];
   onClose: () => void;
   onModelChange: (value: string) => void;
-  onPromptChange: (value: string) => void;
   onRun: () => void;
 };
 
@@ -32,13 +30,11 @@ export function AuthFilesAntigravityTestModal({
   availableModels,
   loadingModels,
   selectedModel,
-  prompt,
   running,
   summaryMessage,
   results,
   onClose,
   onModelChange,
-  onPromptChange,
   onRun,
 }: AuthFilesAntigravityTestModalProps) {
   const { t } = useTranslation();
@@ -108,20 +104,6 @@ export function AuthFilesAntigravityTestModal({
           </datalist>
         </div>
 
-        <div className={styles.antigravityTestPromptField}>
-          <label htmlFor="antigravity-test-prompt">{t('auth_files.antigravity_test_prompt_label')}</label>
-          <textarea
-            id="antigravity-test-prompt"
-            className={styles.antigravityTestPromptTextarea}
-            value={prompt}
-            onChange={(event) => onPromptChange(event.target.value)}
-            placeholder={t('auth_files.antigravity_test_prompt_placeholder')}
-            disabled={running}
-            rows={4}
-          />
-          <div className="hint">{t('auth_files.antigravity_test_prompt_hint')}</div>
-        </div>
-
         {results.length > 0 && (
           <div className={styles.antigravityTestResultsSection}>
             <div className={styles.antigravityTestResultsTitle}>{t('auth_files.antigravity_test_results')}</div>
@@ -153,6 +135,18 @@ export function AuthFilesAntigravityTestModal({
                     </div>
                   </div>
                   <div className={styles.antigravityTestResultSummary}>{result.summary}</div>
+                  {result.validationUrl && (
+                    <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <a
+                        href={result.validationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: 12, color: '#3b82f6', textDecoration: 'underline' }}
+                      >
+                        {t('auth_files.antigravity_test_verify_account')}
+                      </a>
+                    </div>
+                  )}
                   {result.bodyText && (
                     <details className={styles.antigravityTestDetails}>
                       <summary>{t('auth_files.antigravity_test_raw_response')}</summary>

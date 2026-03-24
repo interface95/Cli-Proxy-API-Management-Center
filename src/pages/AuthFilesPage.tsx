@@ -124,7 +124,6 @@ export function AuthFilesPage() {
   const [antigravityModelsLoading, setAntigravityModelsLoading] = useState(false);
   const [antigravityAvailableModels, setAntigravityAvailableModels] = useState<string[]>([]);
   const [antigravitySelectedModel, setAntigravitySelectedModel] = useState('');
-  const [antigravityPrompt, setAntigravityPrompt] = useState('Please reply with OK only.');
   const [antigravityTesting, setAntigravityTesting] = useState(false);
   const [antigravitySummary, setAntigravitySummary] = useState('');
   const [antigravityResults, setAntigravityResults] = useState<AntigravityMessageTestResult[]>([]);
@@ -452,7 +451,6 @@ export function AuthFilesPage() {
     for (const file of antigravityTestTargets) {
       const result = await runAntigravityMessageTest(file, {
         model: selectedModel,
-        prompt: antigravityPrompt,
       });
       nextResults.push(result);
       setAntigravityResults([...nextResults]);
@@ -480,7 +478,6 @@ export function AuthFilesPage() {
 
     setAntigravityTesting(false);
   }, [
-    antigravityPrompt,
     antigravitySelectedModel,
     antigravityTestTargets,
     antigravityTesting,
@@ -892,13 +889,11 @@ export function AuthFilesPage() {
         availableModels={antigravityAvailableModels}
         loadingModels={antigravityModelsLoading}
         selectedModel={antigravitySelectedModel}
-        prompt={antigravityPrompt}
         running={antigravityTesting}
         summaryMessage={antigravitySummary}
         results={antigravityResults}
         onClose={closeAntigravityTest}
         onModelChange={setAntigravitySelectedModel}
-        onPromptChange={setAntigravityPrompt}
         onRun={() => void runAntigravityTests()}
       />
 
