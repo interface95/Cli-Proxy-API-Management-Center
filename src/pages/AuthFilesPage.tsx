@@ -428,7 +428,8 @@ export function AuthFilesPage() {
   const closeAntigravityTest = useCallback(() => {
     if (antigravityTesting) return;
     setAntigravityTestModalOpen(false);
-  }, [antigravityTesting]);
+    void loadFiles();
+  }, [antigravityTesting, loadFiles]);
 
   const runAntigravityTests = useCallback(async () => {
     if (antigravityTesting) return;

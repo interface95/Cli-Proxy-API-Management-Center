@@ -149,11 +149,29 @@ export const runAntigravityMessageTest = async (
       };
     }
 
+    // Summarize error for display instead of showing raw JSON
+    const rawError = result.error ?? 'Test failed';
+    let summary = rawError;
+    let bodyText = '';
+    const valUrl = result.validation_url ?? extractValidationUrl(rawError);
+
+    if (rawError.includes('403') && rawError.includes('VALIDATION_REQUIRED')) {
+      summary = 'Verification Required (403)';
+      bodyText = rawError.replace(/^upstream returned \d+:\s*/, '');
+    } else if (rawError.includes('429') && rawError.includes('QUOTA_EXHAUSTED')) {
+      summary = 'Quota Exhausted (429)';
+      bodyText = rawError.replace(/^(upstream returned \d+|AI Credits retry failed \d+):\s*/, '');
+    } else if (rawError.includes('403')) {
+      summary = 'Forbidden (403)';
+      bodyText = rawError.replace(/^upstream returned \d+:\s*/, '');
+    } else if (rawError.includes('429')) {
+      summary = 'Rate Limited (429)';
+      bodyText = rawError.replace(/^(upstream returned \d+|AI Credits retry failed \d+):\s*/, '');
+    }
+
     return buildErrorResult(
       file, authIndex, model, durationMs,
-      result.error ?? 'Test failed',
-      '', undefined, undefined,
-      result.validation_url,
+      summary, bodyText, undefined, undefined, valUrl,
     );
   } catch (err: unknown) {
     const durationMs = Date.now() - startedAt;
