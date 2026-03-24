@@ -730,11 +730,9 @@ const renderAntigravityItems = (
     const CREDITS_TOTAL = 25000;
     const remaining = Math.max(0, Math.min(CREDITS_TOTAL, creditBalance));
     const percent = Math.round((remaining / CREDITS_TOTAL) * 100);
-    // Detect active AI Credits usage: either from backend executor tracking or from quota fractions
+    // Only show "using credits" when the backend executor has actually confirmed credits are in use
     const hasActiveCreditsFromExecutor = Object.keys(quota.modelCreditsStatus ?? {}).length > 0;
-    // Google API reports 0.2 (20%) when quota is actually exhausted (429), so treat <= 0.2 as exhausted
-    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0.2);
-    const isUsingCredits = (hasExhaustedQuota || hasActiveCreditsFromExecutor) && creditBalance > 0;
+    const isUsingCredits = hasActiveCreditsFromExecutor && creditBalance > 0;
     const label = isUsingCredits
       ? `⚡ ${t('antigravity_quota.using_credits')}`
       : 'AI Credits';
@@ -757,6 +755,40 @@ const renderAntigravityItems = (
         h(QuotaProgressBar, { percent, highThreshold: 60, mediumThreshold: 20 })
       )
     );
+
+    // Per-model AI Credits usage status with countdown
+    const creditsEntries = Object.entries(quota.modelCreditsStatus ?? {});
+    if (creditsEntries.length > 0) {
+      const now = Date.now();
+      const modelLabels: string[] = [];
+      for (const [model, resetAtStr] of creditsEntries) {
+        const resetAt = new Date(resetAtStr).getTime();
+        if (resetAt <= now) continue;
+        const remainMs = resetAt - now;
+        const hours = Math.floor(remainMs / 3600000);
+        const mins = Math.floor((remainMs % 3600000) / 60000);
+        const timeStr = hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
+        // Shorten model name: claude-opus-4-6-thinking → COpus46T
+        const short = model
+          .replace('claude-', 'C')
+          .replace('opus-', 'Opus')
+          .replace('sonnet-', 'Son')
+          .replace('haiku-', 'Haiku')
+          .replace(/-thinking$/, 'T')
+          .replace(/-/g, '');
+        modelLabels.push(`⚡ ${short} ${timeStr}`);
+      }
+      if (modelLabels.length > 0) {
+        nodes.push(
+          h('div', {
+            key: 'credits-models',
+            style: { fontSize: 11, color: '#a78bfa', padding: '2px 0', display: 'flex', gap: 8, flexWrap: 'wrap' as const },
+          }, ...modelLabels.map((label, i) =>
+            h('span', { key: `cm-${i}`, style: { background: 'rgba(167,139,250,0.12)', padding: '1px 6px', borderRadius: 4 } }, label)
+          ))
+        );
+      }
+    }
   }
 
   if (groups.length === 0) {
@@ -766,7 +798,9 @@ const renderAntigravityItems = (
 
   nodes.push(
     ...groups.map((group) => {
-      const clamped = Math.max(0, Math.min(1, group.remainingFraction));
+      // Google API reports 0.2 when quota is actually exhausted (429), treat as 0
+      const raw = group.remainingFraction <= 0.2 ? 0 : group.remainingFraction;
+      const clamped = Math.max(0, Math.min(1, raw));
       const percent = Math.round(clamped * 100);
       const resetLabel = formatQuotaResetTime(group.resetTime);
 

@@ -87,12 +87,35 @@ interface TestCredentialResponse {
   validation_url?: string;
 }
 
+// Extract validation_url from a 403 error message
+const extractValidationUrl = (msg: string): string => {
+  const match = msg.match(/"validation_url"\s*:\s*"([^"]+)"/);
+  return match?.[1]?.replace(/\\u0026/g, '&') ?? '';
+};
+
 export const runAntigravityMessageTest = async (
   file: AuthFileItem,
   config: AntigravityMessageTestConfig
 ): Promise<AntigravityMessageTestResult> => {
   const authIndex = normalizeAuthIndex(file['auth_index'] ?? file.authIndex);
   const model = config.model.trim();
+
+  // If credential already has a 403 error from normal requests, return it directly
+  const statusMsg = String(file['status_message'] ?? file.statusMessage ?? '');
+  if (statusMsg.includes('403') && statusMsg.includes('PERMISSION_DENIED')) {
+    return {
+      fileName: file.name,
+      authIndex,
+      model,
+      status: 'error',
+      durationMs: 0,
+      summary: statusMsg.includes('VALIDATION_REQUIRED')
+        ? 'Verification Required (403)'
+        : 'Forbidden (403)',
+      bodyText: statusMsg,
+      validationUrl: extractValidationUrl(statusMsg),
+    };
+  }
   const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const startedAt = Date.now();
 

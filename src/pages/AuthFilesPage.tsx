@@ -22,6 +22,7 @@ import { Select } from '@/components/ui/Select';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { copyToClipboard } from '@/utils/clipboard';
+import { apiClient } from '@/services/api/client';
 import {
   MAX_CARD_PAGE_SIZE,
   MIN_CARD_PAGE_SIZE,
@@ -978,6 +979,22 @@ export function AuthFilesPage() {
                     disabled={disableControls || selectedNames.length === 0}
                   >
                     {t('common.delete')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const res = await apiClient.post<{ cleared: number }>('/clear-all-errors');
+                        showNotification(t('auth_files.clear_errors_success', { count: res.cleared ?? 0 }), 'success');
+                        await loadFiles();
+                      } catch {
+                        showNotification(t('auth_files.clear_errors_failed'), 'error');
+                      }
+                    }}
+                    disabled={disableControls}
+                  >
+                    {t('auth_files.clear_all_errors')}
                   </Button>
                 </div>
               </div>
