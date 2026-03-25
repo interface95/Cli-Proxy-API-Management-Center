@@ -607,6 +607,8 @@
     "forbidden_validation": "需要验证",
     "forbidden_violation": "违规封禁",
     "forbidden_generic": "已封禁",
+    "refresh_all_quota": "刷新所有额度",
+    "quota_refresh_all_started": "额度缓存已清除，正在刷新...",
     "clear_all_errors": "清除所有错误",
     "clear_errors_success": "已清除 {{count}} 个凭证的错误状态",
     "clear_errors_failed": "清除错误失败",

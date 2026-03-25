@@ -607,6 +607,8 @@
     "forbidden_validation": "Verification Required",
     "forbidden_violation": "Violation Ban",
     "forbidden_generic": "Forbidden",
+    "refresh_all_quota": "Refresh All Quota",
+    "quota_refresh_all_started": "Quota cache cleared, refreshing...",
     "clear_all_errors": "Clear All Errors",
     "clear_errors_success": "Cleared {{count}} credential(s)",
     "clear_errors_failed": "Failed to clear errors",

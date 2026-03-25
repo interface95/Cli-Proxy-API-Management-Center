@@ -71,7 +71,7 @@ import {
   writeAuthFilesUiState,
   type AuthFilesSortMode,
 } from '@/features/authFiles/uiState';
-import { useAuthStore, useNotificationStore, useThemeStore } from '@/stores';
+import { useAuthStore, useNotificationStore, useQuotaStore, useThemeStore } from '@/stores';
 import type { AuthFileItem } from '@/types';
 import styles from './AuthFilesPage.module.scss';
 
@@ -105,6 +105,7 @@ const getFilterTagIcon = (type: string, resolvedTheme: ResolvedTheme): string | 
 export function AuthFilesPage() {
   const { t } = useTranslation();
   const showNotification = useNotificationStore((state) => state.showNotification);
+  const clearQuotaCache = useQuotaStore((state) => state.clearQuotaCache);
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const pageTransitionLayer = usePageTransitionLayer();
@@ -683,6 +684,17 @@ export function AuthFilesPage() {
           <div className={styles.headerActions}>
             <Button variant="secondary" size="sm" onClick={handleHeaderRefresh} disabled={loading}>
               {t('common.refresh')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                clearQuotaCache();
+                showNotification(t('auth_files.quota_refresh_all_started'), 'success');
+              }}
+              disabled={loading}
+            >
+              {t('auth_files.refresh_all_quota')}
             </Button>
             <Button
               size="sm"
