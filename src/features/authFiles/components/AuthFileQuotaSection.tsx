@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import {
@@ -93,6 +93,17 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
       showNotification(t('auth_files.quota_refresh_failed', { name: file.name, message }), 'error');
     }
   }, [disableControls, file, quota?.status, quotaType, showNotification, t, updateQuotaState]);
+
+  // Auto-fetch on mount when idle (triggered by key change from "Refresh All Quota")
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    const status = quota?.status;
+    if (!status || status === 'idle') {
+      void refreshQuotaForFile();
+    }
+  }, [quota?.status, refreshQuotaForFile]);
 
   const config = getQuotaConfig(quotaType) as unknown as {
     i18nPrefix: string;

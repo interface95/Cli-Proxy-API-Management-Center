@@ -106,6 +106,7 @@ export function AuthFilesPage() {
   const { t } = useTranslation();
   const showNotification = useNotificationStore((state) => state.showNotification);
   const clearQuotaCache = useQuotaStore((state) => state.clearQuotaCache);
+  const [quotaRefreshKey, setQuotaRefreshKey] = useState(0);
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const pageTransitionLayer = usePageTransitionLayer();
@@ -690,6 +691,7 @@ export function AuthFilesPage() {
               size="sm"
               onClick={() => {
                 clearQuotaCache();
+                setQuotaRefreshKey((k) => k + 1);
                 showNotification(t('auth_files.quota_refresh_all_started'), 'success');
               }}
               disabled={loading}
@@ -811,7 +813,7 @@ export function AuthFilesPage() {
           >
             {pageItems.map((file) => (
               <AuthFileCard
-                key={file.name}
+                key={`${file.name}-${quotaRefreshKey}`}
                 file={file}
                 selected={selectedFiles.has(file.name)}
                 resolvedTheme={resolvedTheme}

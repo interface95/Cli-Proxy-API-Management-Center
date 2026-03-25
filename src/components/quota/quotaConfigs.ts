@@ -730,9 +730,10 @@ const renderAntigravityItems = (
     const CREDITS_TOTAL = 25000;
     const remaining = Math.max(0, Math.min(CREDITS_TOTAL, creditBalance));
     const percent = Math.round((remaining / CREDITS_TOTAL) * 100);
-    // Only show "using credits" when the backend executor has actually confirmed credits are in use
+    // Show "using credits" when executor confirms OR when quota is exhausted (0.2 = Google's "exhausted" value)
     const hasActiveCreditsFromExecutor = Object.keys(quota.modelCreditsStatus ?? {}).length > 0;
-    const isUsingCredits = hasActiveCreditsFromExecutor && creditBalance > 0;
+    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0.2);
+    const isUsingCredits = (hasActiveCreditsFromExecutor || hasExhaustedQuota) && creditBalance > 0;
     const label = isUsingCredits
       ? `⚡ ${t('antigravity_quota.using_credits')}`
       : 'AI Credits';
