@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { isMap, parse as parseYaml, parseDocument } from 'yaml';
 import type {
+  AntigravityCreditsMode,
   PayloadFilterRule,
   PayloadParamEntry,
   PayloadParamValueType,
@@ -14,6 +15,26 @@ import { DEFAULT_VISUAL_VALUES } from '@/types/visualConfig';
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
+}
+
+function parseBooleanValue(raw: unknown): boolean | undefined {
+  if (typeof raw === 'boolean') return raw;
+  if (typeof raw === 'number') return raw !== 0;
+  if (typeof raw !== 'string') return undefined;
+
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1') return true;
+  if (normalized === 'false' || normalized === '0') return false;
+  return undefined;
+}
+
+function parseAntigravityCreditsMode(raw: unknown): AntigravityCreditsMode | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === 'off' || normalized === 'fallback' || normalized === 'always') {
+    return normalized;
+  }
+  return undefined;
 }
 
 function extractApiKeyValue(raw: unknown): string | null {
@@ -473,6 +494,13 @@ export function useVisualConfig() {
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
       const apiKeysStorage = resolveApiKeysStorage(parsed);
+      const antigravityCreditsMode =
+        parseAntigravityCreditsMode(antigravity?.['credits-mode']) ??
+        (() => {
+          const legacyAllowOverages = parseBooleanValue(antigravity?.['allow-overages']);
+          if (legacyAllowOverages === undefined) return 'off';
+          return legacyAllowOverages ? 'fallback' : 'off';
+        })();
 
       const newValues: VisualConfigValues = {
         host: typeof parsed.host === 'string' ? parsed.host : '',
@@ -516,7 +544,7 @@ export function useVisualConfig() {
         routingStrategy:
           routing?.strategy === 'fill-first' ? 'fill-first' : 'round-robin',
 
-        antigravityAllowOverages: Boolean(antigravity?.['allow-overages']),
+        antigravityCreditsMode,
 
         payloadDefaultRules: parsePayloadRules(payload?.default),
         payloadOverrideRules: parsePayloadRules(payload?.override),
@@ -643,9 +671,9 @@ export function useVisualConfig() {
         setBooleanInDoc(doc, ['ws-auth'], values.wsAuth);
 
         ensureMapInDoc(doc, ['antigravity']);
-        doc.setIn(['antigravity', 'allow-overages'], values.antigravityAllowOverages);
-        if (!values.antigravityAllowOverages) {
-          deleteIfMapEmpty(doc, ['antigravity']);
+        doc.setIn(['antigravity', 'credits-mode'], values.antigravityCreditsMode);
+        if (docHas(doc, ['antigravity', 'allow-overages'])) {
+          doc.deleteIn(['antigravity', 'allow-overages']);
         }
 
         if (

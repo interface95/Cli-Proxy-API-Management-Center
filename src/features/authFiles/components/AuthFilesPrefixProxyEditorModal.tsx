@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import type {
   PrefixProxyEditorField,
@@ -115,14 +116,32 @@ export function AuthFilesPrefixProxyEditorModal(props: AuthFilesPrefixProxyEdito
                   onChange={(e) => onChange('disableCooling', e.target.value)}
                 />
                 <div className="form-group">
-                  <label>{t('auth_files.allow_overages_label')}</label>
-                  <ToggleSwitch
-                    checked={Boolean(editor.allowOverages)}
+                  <label>{t('auth_files.credits_mode_label')}</label>
+                  <Select
+                    value={editor.creditsMode}
+                    options={[
+                      {
+                        value: '',
+                        label: t('auth_files.credits_mode_option_inherit'),
+                      },
+                      {
+                        value: 'off',
+                        label: t('auth_files.credits_mode_option_off'),
+                      },
+                      {
+                        value: 'fallback',
+                        label: t('auth_files.credits_mode_option_fallback'),
+                      },
+                      {
+                        value: 'always',
+                        label: t('auth_files.credits_mode_option_always'),
+                      },
+                    ]}
                     disabled={disableControls || editor.saving || !editor.json}
-                    ariaLabel={t('auth_files.allow_overages_label')}
-                    onChange={(value) => onChange('allowOverages', value)}
+                    ariaLabel={t('auth_files.credits_mode_label')}
+                    onChange={(value) => onChange('creditsMode', value)}
                   />
-                  <div className="hint">{t('auth_files.allow_overages_hint')}</div>
+                  <div className="hint">{t('auth_files.credits_mode_hint')}</div>
                 </div>
                 <Input
                   label={t('auth_files.note_label')}

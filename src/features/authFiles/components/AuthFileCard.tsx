@@ -122,11 +122,13 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const forbiddenInfo = (() => {
     if (!rawStatusMessage || !rawStatusMessage.includes('403')) return null;
     const lower = rawStatusMessage.toLowerCase();
-    let type: 'validation' | 'violation' | 'forbidden' = 'forbidden';
+    let type: 'validation' | 'violation' | 'consumer_invalid' | 'forbidden' = 'forbidden';
     if (lower.includes('validation_required') || lower.includes('verify your account') || lower.includes('validation_url')) {
       type = 'validation';
     } else if (lower.includes('terms of service') || lower.includes('violation')) {
       type = 'violation';
+    } else if (lower.includes('consumer_invalid') || lower.includes('permission denied on resource project')) {
+      type = 'consumer_invalid';
     }
     const match = rawStatusMessage.match(/"validation_url"\s*:\s*"([^"]+)"/);
     const url = match?.[1]?.replace(/\\u0026/g, '&') ?? '';
@@ -193,10 +195,13 @@ export function AuthFileCard(props: AuthFileCardProps) {
                 borderRadius: 4,
                 ...(forbiddenInfo.type === 'validation'
                   ? { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }
+                  : forbiddenInfo.type === 'consumer_invalid'
+                  ? { background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }
                   : { background: 'rgba(239,68,68,0.15)', color: '#ef4444' })
               }}>
                 {forbiddenInfo.type === 'validation' ? `⚠️ ${t('auth_files.forbidden_validation')}`
                   : forbiddenInfo.type === 'violation' ? `🚫 ${t('auth_files.forbidden_violation')}`
+                  : forbiddenInfo.type === 'consumer_invalid' ? `🔑 ${t('auth_files.forbidden_consumer_invalid')}`
                   : `🔒 ${t('auth_files.forbidden_generic')}`}
               </span>
               {forbiddenInfo.url && (

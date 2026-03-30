@@ -157,7 +157,7 @@ const resolveAntigravityProjectId = async (file: AuthFileItem): Promise<string> 
 const fetchAntigravityQuota = async (
   file: AuthFileItem,
   t: TFunction
-): Promise<{ groups: AntigravityQuotaGroup[]; creditBalance: number | null; modelCreditsStatus: Record<string, string> | null }> => {
+): Promise<{ groups: AntigravityQuotaGroup[]; creditBalance: number | null; tierLabel: string | null; modelCreditsStatus: Record<string, string> | null }> => {
   const rawAuthIndex = file['auth_index'] ?? file.authIndex;
   const authIndex = normalizeAuthIndex(rawAuthIndex);
   if (!authIndex) {
@@ -206,6 +206,7 @@ const fetchAntigravityQuota = async (
       }
 
       let creditBalance: number | null = null;
+      let tierLabel: string | null = null;
       try {
         const codeAssistResult = await apiCallApi.request({
           authIndex,
@@ -219,11 +220,19 @@ const fetchAntigravityQuota = async (
           }),
         });
         if (codeAssistResult.statusCode >= 200 && codeAssistResult.statusCode < 300) {
-          creditBalance = resolveGeminiCliCreditBalance(
-            parseGeminiCliCodeAssistPayload(codeAssistResult.body ?? codeAssistResult.bodyText)
-          );
+          const codeAssistPayload = parseGeminiCliCodeAssistPayload(codeAssistResult.body ?? codeAssistResult.bodyText);
+          creditBalance = resolveGeminiCliCreditBalance(codeAssistPayload);
+          // Extract tier from paidTier or currentTier
+          if (codeAssistPayload) {
+            const paidTier = codeAssistPayload.paidTier ?? codeAssistPayload.paid_tier;
+            const currentTier = codeAssistPayload.currentTier ?? codeAssistPayload.current_tier;
+            const tierName = (paidTier?.name ?? paidTier?.id ?? currentTier?.name ?? currentTier?.id ?? '').toString().toLowerCase();
+            if (tierName.includes('ultra')) tierLabel = 'Ultra';
+            else if (tierName.includes('pro') || tierName.includes('premium') || tierName.includes('standard')) tierLabel = 'Pro';
+            else if (tierName) tierLabel = 'Free';
+          }
         }
-      } catch { /* credits are optional */ }
+      } catch { /* credits and tier are optional */ }
 
       // Read model-level AI Credits usage status from auth file entry (set by backend executor)
       const rawCreditsStatus = file['model_credits_status'] ?? file['modelCreditsStatus'];
@@ -231,7 +240,7 @@ const fetchAntigravityQuota = async (
         ? rawCreditsStatus as Record<string, string>
         : null;
 
-      return { groups, creditBalance, modelCreditsStatus };
+      return { groups, creditBalance, tierLabel, modelCreditsStatus };
     } catch (err: unknown) {
       lastError = err instanceof Error ? err.message : t('common.unknown_error');
       const status = getStatusFromError(err);
@@ -245,7 +254,7 @@ const fetchAntigravityQuota = async (
   }
 
   if (hadSuccess) {
-    return { groups: [], creditBalance: null, modelCreditsStatus: null };
+    return { groups: [], creditBalance: null, tierLabel: null, modelCreditsStatus: null };
   }
 
   throw createStatusError(lastError || t('common.unknown_error'), priorityStatus ?? lastStatus);
@@ -724,15 +733,28 @@ const renderAntigravityItems = (
   const { createElement: h, Fragment } = React;
   const groups = quota.groups ?? [];
   const creditBalance = quota.creditBalance ?? null;
+  const tierLabel = quota.tierLabel ?? null;
   const nodes: ReactNode[] = [];
+
+  // Tier label (Free/Pro/Ultra)
+  if (tierLabel) {
+    const isPremium = tierLabel === 'Ultra';
+    const valueClass = isPremium ? styleMap.premiumPlanValue : styleMap.codexPlanValue;
+    nodes.push(
+      h('div', { key: 'tier', className: styleMap.codexPlan },
+        h('span', { className: styleMap.codexPlanLabel }, t('antigravity_quota.tier_label')),
+        h('span', { className: valueClass }, tierLabel)
+      )
+    );
+  }
 
   if (creditBalance !== null) {
     const CREDITS_TOTAL = 25000;
     const remaining = Math.max(0, Math.min(CREDITS_TOTAL, creditBalance));
     const percent = Math.round((remaining / CREDITS_TOTAL) * 100);
-    // Show "using credits" when executor confirms OR when quota is exhausted (0.2 = Google's "exhausted" value)
+    // Show "using credits" when executor confirms OR when any model quota is fully exhausted
     const hasActiveCreditsFromExecutor = Object.keys(quota.modelCreditsStatus ?? {}).length > 0;
-    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0.2);
+    const hasExhaustedQuota = groups.some((g) => g.remainingFraction <= 0);
     const isUsingCredits = (hasActiveCreditsFromExecutor || hasExhaustedQuota) && creditBalance > 0;
     const label = isUsingCredits
       ? `⚡ ${t('antigravity_quota.using_credits')}`
@@ -1218,7 +1240,7 @@ export const CLAUDE_CONFIG: QuotaConfig<
   renderQuotaItems: renderClaudeItems,
 };
 
-export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: AntigravityQuotaGroup[]; creditBalance: number | null; modelCreditsStatus: Record<string, string> | null }> = {
+export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: AntigravityQuotaGroup[]; creditBalance: number | null; tierLabel: string | null; modelCreditsStatus: Record<string, string> | null }> = {
   type: 'antigravity',
   i18nPrefix: 'antigravity_quota',
   cardIdleMessageKey: 'quota_management.card_idle_hint',
@@ -1226,8 +1248,8 @@ export const ANTIGRAVITY_CONFIG: QuotaConfig<AntigravityQuotaState, { groups: An
   fetchQuota: fetchAntigravityQuota,
   storeSelector: (state) => state.antigravityQuota,
   storeSetter: 'setAntigravityQuota',
-  buildLoadingState: () => ({ status: 'loading', groups: [], creditBalance: null, modelCreditsStatus: null }),
-  buildSuccessState: (data) => ({ status: 'success', groups: data.groups, creditBalance: data.creditBalance, modelCreditsStatus: data.modelCreditsStatus }),
+  buildLoadingState: () => ({ status: 'loading', groups: [], creditBalance: null, tierLabel: null, modelCreditsStatus: null }),
+  buildSuccessState: (data) => ({ status: 'success', groups: data.groups, creditBalance: data.creditBalance, tierLabel: data.tierLabel, modelCreditsStatus: data.modelCreditsStatus }),
   buildErrorState: (message, status) => ({
     status: 'error',
     groups: [],

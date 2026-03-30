@@ -18,11 +18,13 @@ export type PrefixProxyEditorField =
   | 'priority'
   | 'excludedModelsText'
   | 'disableCooling'
-  | 'allowOverages'
+  | 'creditsMode'
   | 'websocket'
   | 'note';
 
 export type PrefixProxyEditorFieldValue = string | boolean;
+
+export type PrefixProxyCreditsMode = '' | 'off' | 'fallback' | 'always';
 
 export type PrefixProxyEditorState = {
   fileName: string;
@@ -38,10 +40,29 @@ export type PrefixProxyEditorState = {
   priority: string;
   excludedModelsText: string;
   disableCooling: string;
-  allowOverages: boolean;
+  creditsMode: PrefixProxyCreditsMode;
   websocket: boolean;
   note: string;
   noteTouched: boolean;
+};
+
+const parseCreditsModeValue = (value: unknown): Exclude<PrefixProxyCreditsMode, ''> | undefined => {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'off' || normalized === 'fallback' || normalized === 'always') {
+    return normalized;
+  }
+  return undefined;
+};
+
+const deriveCreditsMode = (json: Record<string, unknown>): PrefixProxyCreditsMode => {
+  const explicitCreditsMode =
+    parseCreditsModeValue(json.credits_mode) ?? parseCreditsModeValue(json['credits-mode']);
+  if (explicitCreditsMode) return explicitCreditsMode;
+
+  const allowOveragesValue = parseDisableCoolingValue(json.allow_overages);
+  if (allowOveragesValue === undefined) return '';
+  return allowOveragesValue ? 'fallback' : 'off';
 };
 
 export type UseAuthFilesPrefixProxyEditorOptions = {
@@ -94,7 +115,19 @@ const buildPrefixProxyUpdatedText = (editor: PrefixProxyEditorState | null): str
     delete next.disable_cooling;
   }
 
-  next.allow_overages = editor.allowOverages;
+  if (editor.creditsMode) {
+    next.credits_mode = editor.creditsMode;
+  } else if ('credits_mode' in next) {
+    delete next.credits_mode;
+  }
+
+  if ('credits-mode' in next) {
+    delete next['credits-mode'];
+  }
+
+  if ('allow_overages' in next) {
+    delete next.allow_overages;
+  }
 
   if (editor.isCodexFile) {
     next.websocket = editor.websocket;
@@ -161,7 +194,7 @@ export function useAuthFilesPrefixProxyEditor(
       priority: '',
       excludedModelsText: '',
       disableCooling: '',
-      allowOverages: false,
+      creditsMode: '',
       websocket: false,
       note: '',
       noteTouched: false,
@@ -207,13 +240,24 @@ export function useAuthFilesPrefixProxyEditor(
         const websocketValue = parseDisableCoolingValue(json.websocket);
         json.websocket = websocketValue ?? false;
       }
-      const originalText = JSON.stringify(json);
       const prefix = typeof json.prefix === 'string' ? json.prefix : '';
       const proxyUrl = typeof json.proxy_url === 'string' ? json.proxy_url : '';
       const priority = parsePriorityValue(json.priority);
       const excludedModels = normalizeExcludedModels(json.excluded_models);
       const disableCoolingValue = parseDisableCoolingValue(json.disable_cooling);
-      const allowOveragesValue = parseDisableCoolingValue(json.allow_overages);
+      const creditsMode = deriveCreditsMode(json);
+      if (creditsMode) {
+        json.credits_mode = creditsMode;
+      } else if ('credits_mode' in json) {
+        delete json.credits_mode;
+      }
+      if ('credits-mode' in json) {
+        delete json['credits-mode'];
+      }
+      if ('allow_overages' in json) {
+        delete json.allow_overages;
+      }
+      const originalText = JSON.stringify(json);
       const websocketValue = parseDisableCoolingValue(json.websocket);
       const note = typeof json.note === 'string' ? json.note : '';
 
@@ -231,7 +275,7 @@ export function useAuthFilesPrefixProxyEditor(
           excludedModelsText: excludedModels.join('\n'),
           disableCooling:
             disableCoolingValue === undefined ? '' : disableCoolingValue ? 'true' : 'false',
-          allowOverages: allowOveragesValue ?? false,
+          creditsMode,
           websocket: websocketValue ?? false,
           note,
           noteTouched: false,
@@ -259,7 +303,9 @@ export function useAuthFilesPrefixProxyEditor(
       if (field === 'priority') return { ...prev, priority: String(value) };
       if (field === 'excludedModelsText') return { ...prev, excludedModelsText: String(value) };
       if (field === 'disableCooling') return { ...prev, disableCooling: String(value) };
-      if (field === 'allowOverages') return { ...prev, allowOverages: Boolean(value) };
+      if (field === 'creditsMode') {
+        return { ...prev, creditsMode: String(value) as PrefixProxyCreditsMode };
+      }
       if (field === 'note') return { ...prev, note: String(value), noteTouched: true };
       return { ...prev, websocket: Boolean(value) };
     });

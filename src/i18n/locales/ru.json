@@ -552,6 +552,7 @@
     "batch_select_all": "Выбрать все",
     "batch_select_antigravity": "Выбрать Antigravity",
     "batch_deselect": "Отменить",
+    "tier_all": "Все",
     "batch_enable": "Включить",
     "batch_disable": "Отключить",
     "antigravity_test_single_title": "Проверка одного запроса Antigravity",
@@ -595,14 +596,18 @@
     "disable_cooling_label": "Отключение охлаждения (disable_cooling)",
     "disable_cooling_placeholder": "например: true / false / 1 / 0",
     "disable_cooling_hint": "Поддерживает boolean, числа 0/не 0 и строки true/false/1/0; непарсируемые значения игнорируются.",
-    "allow_overages_label": "AI Credits overages (allow_overages)",
-    "allow_overages_placeholder": "empty = follow global, true / false",
-    "allow_overages_hint": "Per-credential AI Credits control. Empty follows global config; true/false overrides it.",
+    "credits_mode_label": "Режим AI Credits (credits_mode)",
+    "credits_mode_hint": "Старое поле allow_overages по-прежнему читается для совместимости. При сохранении записывается credits_mode; вариант наследования удаляет локальное переопределение.",
+    "credits_mode_option_inherit": "Наследовать глобальную настройку",
+    "credits_mode_option_off": "Off",
+    "credits_mode_option_fallback": "Fallback",
+    "credits_mode_option_always": "Always",
     "antigravity_test_verify_account": "Open Verification Link",
     "antigravity_copy_verify_link": "Copy Verification Link",
     "forbidden_validation": "Verification Required",
     "forbidden_violation": "Violation Ban",
     "forbidden_generic": "Forbidden",
+    "forbidden_consumer_invalid": "Project Permission Error",
     "refresh_all_quota": "Refresh All Quota",
     "quota_refresh_all_started": "Quota cache cleared, refreshing...",
     "clear_all_errors": "Clear All Errors",
@@ -630,7 +635,8 @@
     "missing_auth_index": "В файле авторизации отсутствует auth_index",
     "empty_models": "Данные по квоте отсутствуют",
     "refresh_button": "Обновить квоту",
-    "fetch_all": "Получить все"
+    "fetch_all": "Получить все",
+    "tier_label": "Уровень"
   },
   "claude_quota": {
     "title": "Квота Claude",
@@ -1263,6 +1269,15 @@
           "switch_project_desc": "Автоматически переходить на другой проект при превышении квоты",
           "switch_preview_model": "Переключить на preview-модель",
           "switch_preview_model_desc": "Переключаться на preview-версию модели при превышении квоты"
+        },
+        "antigravity": {
+          "title": "Antigravity",
+          "description": "Режим AI Credits для Antigravity",
+          "credits_mode": "Режим credits",
+          "credits_mode_hint": "off отключает AI Credits, fallback использует их после исчерпания бесплатной квоты, always всегда предпочитает AI Credits для запросов Antigravity.",
+          "credits_mode_off": "Off",
+          "credits_mode_fallback": "Fallback",
+          "credits_mode_always": "Always"
         },
         "streaming": {
           "title": "Настройки стриминга",

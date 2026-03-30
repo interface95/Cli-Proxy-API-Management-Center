@@ -132,6 +132,7 @@ export function AuthFilesPage() {
   const [antigravityResults, setAntigravityResults] = useState<AntigravityMessageTestResult[]>([]);
   const [viewMode, setViewMode] = useState<'diagram' | 'list'>('list');
   const [sortMode, setSortMode] = useState<AuthFilesSortMode>('default');
+  const [tierFilter, setTierFilter] = useState<'all' | 'Ultra' | 'Pro' | 'Free'>('all');
   const [batchActionBarVisible, setBatchActionBarVisible] = useState(false);
   const floatingBatchActionsRef = useRef<HTMLDivElement>(null);
   const batchActionAnimationRef = useRef<AnimationPlaybackControlsWithThen | null>(null);
@@ -216,6 +217,12 @@ export function AuthFilesPage() {
     ? (normalizedFilter as QuotaProviderType)
     : null;
   const antigravityFilterActive = normalizedFilter === 'antigravity';
+  const antigravityQuota = useQuotaStore((state) => state.antigravityQuota);
+
+  // Reset tier filter when leaving Antigravity tab
+  useEffect(() => {
+    if (!antigravityFilterActive) setTierFilter('all');
+  }, [antigravityFilterActive]);
 
   useEffect(() => {
     const persisted = readAuthFilesUiState();
@@ -358,9 +365,31 @@ export function AuthFilesPage() {
         item.name.toLowerCase().includes(term) ||
         (item.type || '').toString().toLowerCase().includes(term) ||
         (item.provider || '').toString().toLowerCase().includes(term);
-      return matchType && matchSearch;
+      if (!matchType || !matchSearch) return false;
+      // Antigravity tier sub-filter
+      if (antigravityFilterActive && tierFilter !== 'all') {
+        const tier = antigravityQuota[item.name]?.tierLabel;
+        if (tier !== tierFilter) return false;
+      }
+      return true;
     });
-  }, [filesMatchingProblemFilter, filter, search]);
+  }, [filesMatchingProblemFilter, filter, search, antigravityFilterActive, tierFilter, antigravityQuota]);
+
+  // Tier counts for Antigravity sub-filter badges
+  const tierCounts = useMemo(() => {
+    if (!antigravityFilterActive) return { all: 0, Ultra: 0, Pro: 0, Free: 0 };
+    const antigravityFiles = filesMatchingProblemFilter.filter(
+      (f) => normalizeProviderKey(f.type || '') === 'antigravity'
+    );
+    const counts = { all: antigravityFiles.length, Ultra: 0, Pro: 0, Free: 0 };
+    antigravityFiles.forEach((f) => {
+      const tier = antigravityQuota[f.name]?.tierLabel;
+      if (tier === 'Ultra') counts.Ultra++;
+      else if (tier === 'Pro') counts.Pro++;
+      else if (tier === 'Free') counts.Free++;
+    });
+    return counts;
+  }, [antigravityFilterActive, filesMatchingProblemFilter, antigravityQuota]);
 
   const sorted = useMemo(() => {
     const copy = [...filtered];
@@ -657,6 +686,51 @@ export function AuthFilesPage() {
     </div>
   );
 
+  const renderTierSubFilter = () => {
+    if (!antigravityFilterActive) return null;
+    const hasTierData = tierCounts.Ultra > 0 || tierCounts.Pro > 0 || tierCounts.Free > 0;
+    if (!hasTierData) return null;
+    const isDark = resolvedTheme === 'dark';
+    const tiers: Array<{ key: 'all' | 'Ultra' | 'Pro' | 'Free'; label: string; bg: string; text: string; activeBg: string; activeText: string }> = [
+      { key: 'all', label: t('auth_files.tier_all'), bg: isDark ? '#374151' : '#f3f4f6', text: isDark ? '#d1d5db' : '#6b7280', activeBg: isDark ? '#9ca3af' : '#6b7280', activeText: isDark ? '#111827' : '#ffffff' },
+      { key: 'Ultra', label: 'Ultra', bg: isDark ? 'rgba(167,139,250,0.15)' : 'rgba(139,92,246,0.1)', text: '#a78bfa', activeBg: '#8b5cf6', activeText: '#ffffff' },
+      { key: 'Pro', label: 'Pro', bg: isDark ? 'rgba(96,165,250,0.15)' : 'rgba(59,130,246,0.1)', text: '#60a5fa', activeBg: '#3b82f6', activeText: '#ffffff' },
+      { key: 'Free', label: 'Free', bg: isDark ? 'rgba(156,163,175,0.15)' : 'rgba(107,114,128,0.1)', text: isDark ? '#9ca3af' : '#6b7280', activeBg: isDark ? '#6b7280' : '#9ca3af', activeText: '#ffffff' },
+    ];
+    return (
+      <div style={{ display: 'flex', gap: 6, marginTop: 8, marginLeft: 2 }}>
+        {tiers.map(({ key, label, bg, text, activeBg, activeText }) => {
+          const count = tierCounts[key];
+          if (key !== 'all' && count === 0) return null;
+          const isActive = tierFilter === key;
+          return (
+            <button
+              key={key}
+              onClick={() => { setTierFilter(key); setPage(1); }}
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                padding: '3px 10px',
+                borderRadius: 6,
+                border: 'none',
+                background: isActive ? activeBg : bg,
+                color: isActive ? activeText : text,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <span>{label}</span>
+              <span style={{ fontSize: 11, opacity: 0.8 }}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   const titleNode = (
     <div className={styles.titleWrapper}>
       <span>{t('auth_files.title_section')}</span>
@@ -737,6 +811,7 @@ export function AuthFilesPage() {
 
         <div className={styles.filterSection}>
           {renderFilterTags()}
+          {renderTierSubFilter()}
 
           <div className={styles.filterControls}>
             <div className={styles.filterItem}>

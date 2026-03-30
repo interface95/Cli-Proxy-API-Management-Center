@@ -556,6 +556,7 @@
     "batch_select_all": "全选",
     "batch_select_antigravity": "全选 Antigravity",
     "batch_deselect": "取消选择",
+    "tier_all": "全部",
     "batch_enable": "启用",
     "batch_disable": "禁用",
     "antigravity_test_single_title": "Antigravity 单请求测试",
@@ -599,14 +600,18 @@
     "disable_cooling_label": "禁用冷却（disable_cooling）",
     "disable_cooling_placeholder": "例如: true / false / 1 / 0",
     "disable_cooling_hint": "支持布尔值、0/非0 数字或字符串 true/false/1/0；无法解析时忽略。",
-    "allow_overages_label": "AI 点数超量（allow_overages）",
-    "allow_overages_placeholder": "留空=跟随全局，true / false",
-    "allow_overages_hint": "凭证级别的 AI Credits 控制。留空跟随全局配置；填 true/false 覆盖全局。",
+    "credits_mode_label": "AI 点数模式（credits_mode）",
+    "credits_mode_hint": "会兼容读取旧的 allow_overages。保存时统一写入 credits_mode；选择“继承全局设置”会移除凭证级覆盖。",
+    "credits_mode_option_inherit": "继承全局设置",
+    "credits_mode_option_off": "关闭",
+    "credits_mode_option_fallback": "回退",
+    "credits_mode_option_always": "总是",
     "antigravity_test_verify_account": "打开验证链接",
     "antigravity_copy_verify_link": "复制验证链接",
     "forbidden_validation": "需要验证",
     "forbidden_violation": "违规封禁",
     "forbidden_generic": "已封禁",
+    "forbidden_consumer_invalid": "项目权限错误",
     "refresh_all_quota": "刷新所有额度",
     "quota_refresh_all_started": "额度缓存已清除，正在刷新...",
     "clear_all_errors": "清除所有错误",
@@ -632,7 +637,8 @@
     "empty_models": "暂无额度数据",
     "refresh_button": "刷新额度",
     "fetch_all": "获取全部",
-    "using_credits": "正在使用 AI 点数"
+    "using_credits": "正在使用 AI 点数",
+    "tier_label": "等级"
   },
   "claude_quota": {
     "title": "Claude 额度",
@@ -1287,9 +1293,12 @@
         },
         "antigravity": {
           "title": "Antigravity",
-          "description": "Antigravity AI 点数和超量请求设置",
-          "allow_overages": "允许超量请求 (AI Credits)",
-          "allow_overages_desc": "启用后，当免费配额耗尽时将使用 AI Credits 继续请求。请求会自动注入 enabledCreditTypes 并重试。"
+          "description": "Antigravity AI 点数模式",
+          "credits_mode": "点数模式",
+          "credits_mode_hint": "off 表示禁用 AI 点数；fallback 表示免费配额耗尽后再使用；always 表示始终优先使用 AI 点数。",
+          "credits_mode_off": "关闭",
+          "credits_mode_fallback": "回退",
+          "credits_mode_always": "总是"
         }
       },
       "api_keys": {

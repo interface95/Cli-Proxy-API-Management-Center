@@ -50,6 +50,8 @@ export interface StreamingConfig {
   nonstreamKeepaliveInterval: string;
 }
 
+export type AntigravityCreditsMode = 'off' | 'fallback' | 'always';
+
 export type VisualConfigValues = {
   host: string;
   port: string;
@@ -74,7 +76,7 @@ export type VisualConfigValues = {
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   routingStrategy: 'round-robin' | 'fill-first';
-  antigravityAllowOverages: boolean;
+  antigravityCreditsMode: AntigravityCreditsMode;
   wsAuth: boolean;
   payloadDefaultRules: PayloadRule[];
   payloadOverrideRules: PayloadRule[];
@@ -111,7 +113,7 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   routingStrategy: 'round-robin',
-  antigravityAllowOverages: false,
+  antigravityCreditsMode: 'off',
   wsAuth: false,
   payloadDefaultRules: [],
   payloadOverrideRules: [],

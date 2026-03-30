@@ -87,6 +87,8 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
   const { t } = useTranslation();
   const routingStrategyLabelId = useId();
   const routingStrategyHintId = `${routingStrategyLabelId}-hint`;
+  const antigravityCreditsModeId = useId();
+  const antigravityCreditsModeHintId = `${antigravityCreditsModeId}-hint`;
   const keepaliveInputId = useId();
   const keepaliveHintId = `${keepaliveInputId}-hint`;
   const keepaliveErrorId = `${keepaliveInputId}-error`;
@@ -364,13 +366,40 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
 
       <ConfigSection title={t('config_management.visual.sections.antigravity.title')} description={t('config_management.visual.sections.antigravity.description')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <ToggleRow
-            title={t('config_management.visual.sections.antigravity.allow_overages')}
-            description={t('config_management.visual.sections.antigravity.allow_overages_desc')}
-            checked={values.antigravityAllowOverages}
-            disabled={disabled}
-            onChange={(antigravityAllowOverages) => onChange({ antigravityAllowOverages })}
-          />
+          <div className="form-group">
+            <label id={antigravityCreditsModeId} htmlFor={`${antigravityCreditsModeId}-select`}>
+              {t('config_management.visual.sections.antigravity.credits_mode')}
+            </label>
+            <Select
+              value={values.antigravityCreditsMode}
+              options={[
+                {
+                  value: 'off',
+                  label: t('config_management.visual.sections.antigravity.credits_mode_off'),
+                },
+                {
+                  value: 'fallback',
+                  label: t('config_management.visual.sections.antigravity.credits_mode_fallback'),
+                },
+                {
+                  value: 'always',
+                  label: t('config_management.visual.sections.antigravity.credits_mode_always'),
+                },
+              ]}
+              id={`${antigravityCreditsModeId}-select`}
+              disabled={disabled}
+              ariaLabelledBy={antigravityCreditsModeId}
+              ariaDescribedBy={antigravityCreditsModeHintId}
+              onChange={(nextValue) =>
+                onChange({
+                  antigravityCreditsMode: nextValue as VisualConfigValues['antigravityCreditsMode'],
+                })
+              }
+            />
+            <div id={antigravityCreditsModeHintId} className="hint">
+              {t('config_management.visual.sections.antigravity.credits_mode_hint')}
+            </div>
+          </div>
         </div>
       </ConfigSection>
 
