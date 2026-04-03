@@ -234,12 +234,21 @@ function getPortError(value: string): 'port_range' | undefined {
   return parsed >= 1 && parsed <= 65535 ? undefined : 'port_range';
 }
 
+function getPercentageError(value: string): 'percentage_range' | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (!/^\d+$/.test(trimmed)) return 'percentage_range';
+  const parsed = Number(trimmed);
+  return parsed >= 0 && parsed <= 100 ? undefined : 'percentage_range';
+}
+
 export function getVisualConfigValidationErrors(
   values: VisualConfigValues
 ): VisualConfigValidationErrors {
   return {
     port: getPortError(values.port),
     logsMaxTotalSizeMb: getNonNegativeIntegerError(values.logsMaxTotalSizeMb),
+    cacheHitRatePercent: getPercentageError(values.cacheHitRatePercent),
     requestRetry: getNonNegativeIntegerError(values.requestRetry),
     maxRetryInterval: getNonNegativeIntegerError(values.maxRetryInterval),
     'streaming.keepaliveSeconds': getNonNegativeIntegerError(values.streaming.keepaliveSeconds),
@@ -491,6 +500,7 @@ export function useVisualConfig() {
       const quotaExceeded = asRecord(parsed['quota-exceeded']);
       const routing = asRecord(parsed.routing);
       const antigravity = asRecord(parsed.antigravity);
+      const usageSimulation = asRecord(parsed['usage-simulation']);
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
       const apiKeysStorage = resolveApiKeysStorage(parsed);
@@ -529,6 +539,8 @@ export function useVisualConfig() {
         loggingToFile: Boolean(parsed['logging-to-file']),
         logsMaxTotalSizeMb: String(parsed['logs-max-total-size-mb'] ?? ''),
         usageStatisticsEnabled: Boolean(parsed['usage-statistics-enabled']),
+        cacheHitRateEnabled: Boolean(usageSimulation?.['cache-hit-rate-enabled']),
+        cacheHitRatePercent: String(usageSimulation?.['cache-hit-rate-percent'] ?? 0),
 
         proxyUrl: typeof parsed['proxy-url'] === 'string' ? parsed['proxy-url'] : '',
         forceModelPrefix: Boolean(parsed['force-model-prefix']),
@@ -663,6 +675,17 @@ export function useVisualConfig() {
         setBooleanInDoc(doc, ['logging-to-file'], values.loggingToFile);
         setIntFromStringInDoc(doc, ['logs-max-total-size-mb'], values.logsMaxTotalSizeMb);
         setBooleanInDoc(doc, ['usage-statistics-enabled'], values.usageStatisticsEnabled);
+
+        if (
+          docHas(doc, ['usage-simulation']) ||
+          values.cacheHitRateEnabled ||
+          (values.cacheHitRatePercent.trim() !== '' && values.cacheHitRatePercent.trim() !== '0')
+        ) {
+          ensureMapInDoc(doc, ['usage-simulation']);
+          setBooleanInDoc(doc, ['usage-simulation', 'cache-hit-rate-enabled'], values.cacheHitRateEnabled);
+          setIntFromStringInDoc(doc, ['usage-simulation', 'cache-hit-rate-percent'], values.cacheHitRatePercent);
+          deleteIfMapEmpty(doc, ['usage-simulation']);
+        }
 
         setStringInDoc(doc, ['proxy-url'], values.proxyUrl);
         setBooleanInDoc(doc, ['force-model-prefix'], values.forceModelPrefix);

@@ -89,6 +89,7 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
   const routingStrategyHintId = `${routingStrategyLabelId}-hint`;
   const antigravityCreditsModeId = useId();
   const antigravityCreditsModeHintId = `${antigravityCreditsModeId}-hint`;
+  const cacheHitRateInputId = useId();
   const keepaliveInputId = useId();
   const keepaliveHintId = `${keepaliveInputId}-hint`;
   const keepaliveErrorId = `${keepaliveInputId}-error`;
@@ -100,6 +101,7 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
     values.streaming.nonstreamKeepaliveInterval === '' || values.streaming.nonstreamKeepaliveInterval === '0';
   const portError = getValidationMessage(t, validationErrors?.port);
   const logsMaxSizeError = getValidationMessage(t, validationErrors?.logsMaxTotalSizeMb);
+  const cacheHitRatePercentError = getValidationMessage(t, validationErrors?.cacheHitRatePercent);
   const requestRetryError = getValidationMessage(t, validationErrors?.requestRetry);
   const maxRetryIntervalError = getValidationMessage(t, validationErrors?.maxRetryInterval);
   const keepaliveError = getValidationMessage(t, validationErrors?.['streaming.keepaliveSeconds']);
@@ -275,6 +277,38 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
               onChange={(e) => onChange({ logsMaxTotalSizeMb: e.target.value })}
               disabled={disabled}
               error={logsMaxSizeError}
+            />
+          </SectionGrid>
+        </div>
+      </ConfigSection>
+
+      <ConfigSection
+        title={t('config_management.visual.sections.cache_simulation.title')}
+        description={t('config_management.visual.sections.cache_simulation.description')}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <ToggleRow
+            title={t('config_management.visual.sections.cache_simulation.enabled')}
+            description={t('config_management.visual.sections.cache_simulation.enabled_desc')}
+            checked={values.cacheHitRateEnabled}
+            disabled={disabled}
+            onChange={(cacheHitRateEnabled) => onChange({ cacheHitRateEnabled })}
+          />
+          <SectionGrid>
+            <Input
+              id={cacheHitRateInputId}
+              label={t('config_management.visual.sections.cache_simulation.percent')}
+              type="number"
+              placeholder="35"
+              value={values.cacheHitRatePercent}
+              onChange={(e) => onChange({ cacheHitRatePercent: e.target.value })}
+              disabled={disabled || !values.cacheHitRateEnabled}
+              hint={
+                values.cacheHitRateEnabled
+                  ? t('config_management.visual.sections.cache_simulation.percent_hint_enabled')
+                  : t('config_management.visual.sections.cache_simulation.percent_hint_disabled')
+              }
+              error={cacheHitRatePercentError}
             />
           </SectionGrid>
         </div>

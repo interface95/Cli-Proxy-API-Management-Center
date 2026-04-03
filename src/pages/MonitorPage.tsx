@@ -63,6 +63,8 @@ export interface UsageDetail {
     output_tokens: number;
     reasoning_tokens: number;
     cached_tokens: number;
+    cached_tokens_original?: number;
+    cached_tokens_returned?: number;
     total_tokens: number;
   };
 }

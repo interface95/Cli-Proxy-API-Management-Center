@@ -7,13 +7,14 @@ export type PayloadParamValidationErrorCode =
 export type VisualConfigFieldPath =
   | 'port'
   | 'logsMaxTotalSizeMb'
+  | 'cacheHitRatePercent'
   | 'requestRetry'
   | 'maxRetryInterval'
   | 'streaming.keepaliveSeconds'
   | 'streaming.bootstrapRetries'
   | 'streaming.nonstreamKeepaliveInterval';
 
-export type VisualConfigValidationErrorCode = 'port_range' | 'non_negative_integer';
+export type VisualConfigValidationErrorCode = 'port_range' | 'non_negative_integer' | 'percentage_range';
 
 export type VisualConfigValidationErrors = Partial<
   Record<VisualConfigFieldPath, VisualConfigValidationErrorCode>
@@ -69,6 +70,8 @@ export type VisualConfigValues = {
   loggingToFile: boolean;
   logsMaxTotalSizeMb: string;
   usageStatisticsEnabled: boolean;
+  cacheHitRateEnabled: boolean;
+  cacheHitRatePercent: string;
   proxyUrl: string;
   forceModelPrefix: boolean;
   requestRetry: string;
@@ -106,6 +109,8 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   loggingToFile: false,
   logsMaxTotalSizeMb: '',
   usageStatisticsEnabled: false,
+  cacheHitRateEnabled: false,
+  cacheHitRatePercent: '0',
   proxyUrl: '',
   forceModelPrefix: false,
   requestRetry: '',

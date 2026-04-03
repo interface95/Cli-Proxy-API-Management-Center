@@ -1247,6 +1247,15 @@
           "usage_retention_days": "Хранить статистику (дней)",
           "usage_retention_hint": "0 означает без ограничений (без очистки)"
         },
+        "cache_simulation": {
+          "title": "Симуляция AI Cache",
+          "description": "Переопределяет метрики cache usage, возвращаемые клиентам и показываемые в панели",
+          "enabled": "Включить симуляцию cache hit rate",
+          "enabled_desc": "Когда включено, usage для клиентов и cache-метрики в панели используют симулированные значения вместо реальных",
+          "percent": "Cache hit rate (%)",
+          "percent_hint_enabled": "Укажите процент cache hit rate, который будет возвращаться клиентам и показываться в панели",
+          "percent_hint_disabled": "Симуляция отключена. Клиентам и панели возвращаются реальные cache-метрики"
+        },
         "network": {
           "title": "Сетевые настройки",
           "description": "Параметры прокси, повторов и маршрутизации",
@@ -1353,6 +1362,7 @@
         "validation_blocked": "Исправьте ошибки валидации перед сохранением",
         "port_range": "Введите корректный порт от 1 до 65535",
         "non_negative_integer": "Введите неотрицательное целое число",
+        "percentage_range": "Введите целый процент от 0 до 100",
         "payload_invalid_number": "Введите корректное число",
         "payload_invalid_boolean": "Выберите true или false",
         "payload_invalid_json": "Введите корректный JSON"

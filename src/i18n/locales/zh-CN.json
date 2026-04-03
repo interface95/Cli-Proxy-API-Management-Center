@@ -1247,6 +1247,15 @@
           "usage_statistics_desc": "收集使用统计信息",
           "logs_max_size": "日志文件大小限制 (MB)"
         },
+        "cache_simulation": {
+          "title": "AI 缓存模拟",
+          "description": "覆盖返回给调用者和后台统计页面展示的缓存使用指标",
+          "enabled": "启用模拟缓存命中率",
+          "enabled_desc": "开启后，调用者看到的 usage 与后台缓存统计将使用模拟值，而不是真实缓存值",
+          "percent": "缓存命中率 (%)",
+          "percent_hint_enabled": "设置返回给调用者和后台展示的模拟缓存命中率百分比",
+          "percent_hint_disabled": "模拟已关闭，当前返回和展示的都是真实缓存数据"
+        },
         "network": {
           "title": "网络配置",
           "description": "代理、重试和路由设置",
@@ -1353,6 +1362,7 @@
         "validation_blocked": "请先修复表单校验错误再保存",
         "port_range": "请输入 1 到 65535 之间的有效端口",
         "non_negative_integer": "请输入非负整数",
+        "percentage_range": "请输入 0 到 100 之间的整数百分比",
         "payload_invalid_number": "请输入有效数字",
         "payload_invalid_boolean": "请选择 true 或 false",
         "payload_invalid_json": "请输入有效的 JSON"
@@ -1644,6 +1654,8 @@
       "header_count": "请求数",
       "header_input": "输入",
       "header_output": "输出",
+      "header_cache_original": "真实缓存",
+      "header_cache_returned": "返回缓存",
       "header_total": "总 Token",
       "header_time": "时间",
       "header_actions": "操作",
