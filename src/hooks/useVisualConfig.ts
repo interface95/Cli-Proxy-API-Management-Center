@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { isMap, parse as parseYaml, parseDocument } from 'yaml';
 import type {
+  AntigravityBaseURLMode,
   AntigravityCreditsMode,
   PayloadFilterRule,
   PayloadParamEntry,
@@ -35,6 +36,33 @@ function parseAntigravityCreditsMode(raw: unknown): AntigravityCreditsMode | und
     return normalized;
   }
   return undefined;
+}
+
+function parseAntigravityBaseURLMode(raw: unknown): AntigravityBaseURLMode | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const normalized = raw.trim().toLowerCase();
+  if (
+    normalized === 'auto' ||
+    normalized === 'prod-only' ||
+    normalized === 'daily-only' ||
+    normalized === 'sandbox-only' ||
+    normalized === 'custom'
+  ) {
+    return normalized;
+  }
+  return undefined;
+}
+
+function parseAntigravityCustomBaseURLs(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      const trimmed = item.trim();
+      if (trimmed) out.push(trimmed);
+    }
+  }
+  return out;
 }
 
 function extractApiKeyValue(raw: unknown): string | null {
@@ -501,6 +529,11 @@ export function useVisualConfig() {
           if (legacyAllowOverages === undefined) return 'off';
           return legacyAllowOverages ? 'fallback' : 'off';
         })();
+      const antigravityBaseURLMode =
+        parseAntigravityBaseURLMode(antigravity?.['base-url-mode']) ?? 'auto';
+      const antigravityCustomBaseURLs = parseAntigravityCustomBaseURLs(
+        antigravity?.['custom-base-urls']
+      );
 
       const newValues: VisualConfigValues = {
         host: typeof parsed.host === 'string' ? parsed.host : '',
@@ -545,6 +578,8 @@ export function useVisualConfig() {
           routing?.strategy === 'fill-first' ? 'fill-first' : 'round-robin',
 
         antigravityCreditsMode,
+        antigravityBaseURLMode,
+        antigravityCustomBaseURLs,
 
         payloadDefaultRules: parsePayloadRules(payload?.default),
         payloadOverrideRules: parsePayloadRules(payload?.override),
@@ -674,6 +709,26 @@ export function useVisualConfig() {
         doc.setIn(['antigravity', 'credits-mode'], values.antigravityCreditsMode);
         if (docHas(doc, ['antigravity', 'allow-overages'])) {
           doc.deleteIn(['antigravity', 'allow-overages']);
+        }
+
+        // base URL mode: only persist when non-default ("auto")
+        if (values.antigravityBaseURLMode !== 'auto') {
+          doc.setIn(['antigravity', 'base-url-mode'], values.antigravityBaseURLMode);
+        } else if (docHas(doc, ['antigravity', 'base-url-mode'])) {
+          doc.deleteIn(['antigravity', 'base-url-mode']);
+        }
+
+        // custom URLs: only persist when mode is "custom" and list non-empty
+        if (
+          values.antigravityBaseURLMode === 'custom' &&
+          values.antigravityCustomBaseURLs.length > 0
+        ) {
+          doc.setIn(
+            ['antigravity', 'custom-base-urls'],
+            values.antigravityCustomBaseURLs
+          );
+        } else if (docHas(doc, ['antigravity', 'custom-base-urls'])) {
+          doc.deleteIn(['antigravity', 'custom-base-urls']);
         }
 
         if (

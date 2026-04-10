@@ -555,6 +555,8 @@
     "tier_all": "Все",
     "batch_enable": "Включить",
     "batch_disable": "Отключить",
+    "batch_download": "Скачать",
+    "batch_download_complete": "Скачано {{count}} файлов",
     "antigravity_test_single_title": "Проверка одного запроса Antigravity",
     "antigravity_test_batch_title": "Пакетная проверка запросов Antigravity",
     "antigravity_test_batch_action": "Проверить выбранные Antigravity",
@@ -1272,12 +1274,22 @@
         },
         "antigravity": {
           "title": "Antigravity",
-          "description": "Режим AI Credits для Antigravity",
+          "description": "Режим AI Credits и upstream-эндпоинт Antigravity",
           "credits_mode": "Режим credits",
           "credits_mode_hint": "off отключает AI Credits, fallback использует их после исчерпания бесплатной квоты, always всегда предпочитает AI Credits для запросов Antigravity.",
           "credits_mode_off": "Off",
           "credits_mode_fallback": "Fallback",
-          "credits_mode_always": "Always"
+          "credits_mode_always": "Always",
+          "base_url_mode": "Upstream endpoint",
+          "base_url_mode_hint": "Какой эндпоинт Google Cloud Code использовать. Prod — реальная квота подписки, daily/sandbox — песочницы с очень низкими лимитами.",
+          "base_url_mode_auto": "Auto (prod → daily → sandbox)",
+          "base_url_mode_prod": "Только prod (рекомендуется)",
+          "base_url_mode_daily": "Только daily sandbox",
+          "base_url_mode_sandbox": "Только sandbox",
+          "base_url_mode_custom": "Пользовательский список",
+          "custom_base_urls": "Пользовательские base URLs",
+          "custom_base_urls_hint": "URL пробуются по порядку; следующие используются только если предыдущие не сработали.",
+          "add_custom_base_url": "Добавить URL"
         },
         "streaming": {
           "title": "Настройки стриминга",

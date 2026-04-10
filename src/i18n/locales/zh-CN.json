@@ -559,6 +559,8 @@
     "tier_all": "全部",
     "batch_enable": "启用",
     "batch_disable": "禁用",
+    "batch_download": "下载",
+    "batch_download_complete": "已下载 {{count}} 个文件",
     "antigravity_test_single_title": "Antigravity 单请求测试",
     "antigravity_test_batch_title": "Antigravity 一键批量测试",
     "antigravity_test_batch_action": "测试所选 Antigravity",
@@ -1293,12 +1295,22 @@
         },
         "antigravity": {
           "title": "Antigravity",
-          "description": "Antigravity AI 点数模式",
+          "description": "Antigravity AI 点数模式和上游端点",
           "credits_mode": "点数模式",
           "credits_mode_hint": "off 表示禁用 AI 点数；fallback 表示免费配额耗尽后再使用；always 表示始终优先使用 AI 点数。",
           "credits_mode_off": "关闭",
           "credits_mode_fallback": "回退",
-          "credits_mode_always": "总是"
+          "credits_mode_always": "总是",
+          "base_url_mode": "上游端点",
+          "base_url_mode_hint": "选择请求发往哪个 Google Cloud Code 端点。生产端点使用你订阅的配额；daily/sandbox 是沙箱环境（配额很低）。",
+          "base_url_mode_auto": "自动（生产 → daily → sandbox 降级）",
+          "base_url_mode_prod": "仅生产（推荐）",
+          "base_url_mode_daily": "仅 daily 沙箱",
+          "base_url_mode_sandbox": "仅 sandbox 沙箱",
+          "base_url_mode_custom": "自定义列表",
+          "custom_base_urls": "自定义 Base URL 列表",
+          "custom_base_urls_hint": "按顺序尝试，前面的失败才会使用后面的 URL。",
+          "add_custom_base_url": "添加 URL"
         }
       },
       "api_keys": {

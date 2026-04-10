@@ -43,6 +43,7 @@ export type UseAuthFilesDataResult = {
   deselectAll: () => void;
   batchSetStatus: (names: string[], enabled: boolean) => Promise<void>;
   batchDelete: (names: string[]) => void;
+  handleBatchDownload: (names: string[]) => Promise<void>;
 };
 
 export type UseAuthFilesDataOptions = {
@@ -372,6 +373,27 @@ export function useAuthFilesData(options: UseAuthFilesDataOptions): UseAuthFiles
     [showNotification, t]
   );
 
+  const handleBatchDownload = useCallback(
+    async (names: string[]) => {
+      let success = 0;
+      for (const name of names) {
+        try {
+          const response = await apiClient.getRaw(
+            `/auth-files/download?name=${encodeURIComponent(name)}`,
+            { responseType: 'blob' }
+          );
+          downloadBlob({ filename: name, blob: new Blob([response.data]) });
+          success++;
+          if (names.length > 1) await new Promise(r => setTimeout(r, 100));
+        } catch {
+          // skip failed downloads
+        }
+      }
+      showNotification(t('auth_files.batch_download_complete', { count: success }), 'success');
+    },
+    [showNotification, t]
+  );
+
   const handleStatusToggle = useCallback(
     async (item: AuthFileItem, enabled: boolean) => {
       const name = item.name;
@@ -555,6 +577,7 @@ export function useAuthFilesData(options: UseAuthFilesDataOptions): UseAuthFiles
     selectAllVisible,
     deselectAll,
     batchSetStatus,
-    batchDelete
+    batchDelete,
+    handleBatchDownload
   };
 }

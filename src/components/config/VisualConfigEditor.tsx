@@ -89,6 +89,8 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
   const routingStrategyHintId = `${routingStrategyLabelId}-hint`;
   const antigravityCreditsModeId = useId();
   const antigravityCreditsModeHintId = `${antigravityCreditsModeId}-hint`;
+  const antigravityBaseURLModeId = useId();
+  const antigravityBaseURLModeHintId = `${antigravityBaseURLModeId}-hint`;
   const keepaliveInputId = useId();
   const keepaliveHintId = `${keepaliveInputId}-hint`;
   const keepaliveErrorId = `${keepaliveInputId}-error`;
@@ -400,6 +402,108 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
               {t('config_management.visual.sections.antigravity.credits_mode_hint')}
             </div>
           </div>
+
+          <div className="form-group">
+            <label id={antigravityBaseURLModeId} htmlFor={`${antigravityBaseURLModeId}-select`}>
+              {t('config_management.visual.sections.antigravity.base_url_mode')}
+            </label>
+            <Select
+              value={values.antigravityBaseURLMode}
+              options={[
+                {
+                  value: 'auto',
+                  label: t('config_management.visual.sections.antigravity.base_url_mode_auto'),
+                },
+                {
+                  value: 'prod-only',
+                  label: t('config_management.visual.sections.antigravity.base_url_mode_prod'),
+                },
+                {
+                  value: 'daily-only',
+                  label: t('config_management.visual.sections.antigravity.base_url_mode_daily'),
+                },
+                {
+                  value: 'sandbox-only',
+                  label: t('config_management.visual.sections.antigravity.base_url_mode_sandbox'),
+                },
+                {
+                  value: 'custom',
+                  label: t('config_management.visual.sections.antigravity.base_url_mode_custom'),
+                },
+              ]}
+              id={`${antigravityBaseURLModeId}-select`}
+              disabled={disabled}
+              ariaLabelledBy={antigravityBaseURLModeId}
+              ariaDescribedBy={antigravityBaseURLModeHintId}
+              onChange={(nextValue) =>
+                onChange({
+                  antigravityBaseURLMode:
+                    nextValue as VisualConfigValues['antigravityBaseURLMode'],
+                })
+              }
+            />
+            <div id={antigravityBaseURLModeHintId} className="hint">
+              {t('config_management.visual.sections.antigravity.base_url_mode_hint')}
+            </div>
+          </div>
+
+          {values.antigravityBaseURLMode === 'custom' && (
+            <div className="form-group">
+              <label>
+                {t('config_management.visual.sections.antigravity.custom_base_urls')}
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {values.antigravityCustomBaseURLs.map((url, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      className="input"
+                      style={{ flex: 1 }}
+                      type="text"
+                      value={url}
+                      placeholder="https://cloudcode-pa.googleapis.com"
+                      disabled={disabled}
+                      onChange={(e) => {
+                        const next = [...values.antigravityCustomBaseURLs];
+                        next[idx] = e.target.value;
+                        onChange({ antigravityCustomBaseURLs: next });
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      disabled={disabled}
+                      onClick={() => {
+                        const next = values.antigravityCustomBaseURLs.filter(
+                          (_, i) => i !== idx
+                        );
+                        onChange({ antigravityCustomBaseURLs: next });
+                      }}
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={disabled}
+                  onClick={() =>
+                    onChange({
+                      antigravityCustomBaseURLs: [
+                        ...values.antigravityCustomBaseURLs,
+                        '',
+                      ],
+                    })
+                  }
+                >
+                  {t('config_management.visual.sections.antigravity.add_custom_base_url')}
+                </button>
+              </div>
+              <div className="hint">
+                {t('config_management.visual.sections.antigravity.custom_base_urls_hint')}
+              </div>
+            </div>
+          )}
         </div>
       </ConfigSection>
 

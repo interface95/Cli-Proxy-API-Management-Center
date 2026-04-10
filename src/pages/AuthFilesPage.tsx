@@ -163,6 +163,7 @@ export function AuthFilesPage() {
     deselectAll,
     batchSetStatus,
     batchDelete,
+    handleBatchDownload,
   } = useAuthFilesData({ refreshKeyStats });
 
   const statusBarCache = useAuthFilesStatusBarCache(files, usageDetails);
@@ -1046,6 +1047,14 @@ export function AuthFilesPage() {
                     disabled={disableControls || selectedAntigravityFiles.length === 0}
                   >
                     {t('auth_files.antigravity_test_batch_action')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleBatchDownload(selectedNames)}
+                    disabled={selectedNames.length === 0}
+                  >
+                    {t('auth_files.batch_download')}
                   </Button>
                   <Button
                     size="sm"

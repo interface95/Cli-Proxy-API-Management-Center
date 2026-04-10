@@ -559,6 +559,8 @@
     "tier_all": "All",
     "batch_enable": "Enable",
     "batch_disable": "Disable",
+    "batch_download": "Download",
+    "batch_download_complete": "Downloaded {{count}} files",
     "antigravity_test_single_title": "Antigravity Single Request Test",
     "antigravity_test_batch_title": "Antigravity Batch Request Test",
     "antigravity_test_batch_action": "Test Selected Antigravity",
@@ -1293,12 +1295,22 @@
         },
         "antigravity": {
           "title": "Antigravity",
-          "description": "Antigravity AI Credits mode",
+          "description": "Antigravity AI Credits mode and upstream endpoint",
           "credits_mode": "Credits mode",
           "credits_mode_hint": "off disables AI Credits, fallback uses them after free quota is exhausted, and always prefers AI Credits for Antigravity requests.",
           "credits_mode_off": "Off",
           "credits_mode_fallback": "Fallback",
-          "credits_mode_always": "Always"
+          "credits_mode_always": "Always",
+          "base_url_mode": "Upstream endpoint",
+          "base_url_mode_hint": "Which Google Cloud Code endpoint to send requests to. Prod uses your real subscription quota; daily/sandbox are sandbox environments with very low limits.",
+          "base_url_mode_auto": "Auto (prod → daily → sandbox fallback)",
+          "base_url_mode_prod": "Prod only (recommended)",
+          "base_url_mode_daily": "Daily sandbox only",
+          "base_url_mode_sandbox": "Sandbox only",
+          "base_url_mode_custom": "Custom list",
+          "custom_base_urls": "Custom base URLs",
+          "custom_base_urls_hint": "URLs are tried in order; later ones are only used if earlier ones fail.",
+          "add_custom_base_url": "Add URL"
         }
       },
       "api_keys": {

@@ -51,6 +51,12 @@ export interface StreamingConfig {
 }
 
 export type AntigravityCreditsMode = 'off' | 'fallback' | 'always';
+export type AntigravityBaseURLMode =
+  | 'auto'
+  | 'prod-only'
+  | 'daily-only'
+  | 'sandbox-only'
+  | 'custom';
 
 export type VisualConfigValues = {
   host: string;
@@ -77,6 +83,8 @@ export type VisualConfigValues = {
   quotaSwitchPreviewModel: boolean;
   routingStrategy: 'round-robin' | 'fill-first';
   antigravityCreditsMode: AntigravityCreditsMode;
+  antigravityBaseURLMode: AntigravityBaseURLMode;
+  antigravityCustomBaseURLs: string[];
   wsAuth: boolean;
   payloadDefaultRules: PayloadRule[];
   payloadOverrideRules: PayloadRule[];
@@ -114,6 +122,8 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   quotaSwitchPreviewModel: true,
   routingStrategy: 'round-robin',
   antigravityCreditsMode: 'off',
+  antigravityBaseURLMode: 'auto',
+  antigravityCustomBaseURLs: [],
   wsAuth: false,
   payloadDefaultRules: [],
   payloadOverrideRules: [],
