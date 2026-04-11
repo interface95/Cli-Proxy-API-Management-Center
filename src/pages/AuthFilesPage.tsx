@@ -51,13 +51,7 @@ import {
   type AntigravityMessageTestResult,
 } from '@/features/authFiles/antigravityTest';
 import iconAntigravity from '@/assets/icons/antigravity.svg';
-import iconClaude from '@/assets/icons/claude.svg';
-import iconCodex from '@/assets/icons/codex.svg';
 import iconGemini from '@/assets/icons/gemini.svg';
-import iconIflow from '@/assets/icons/iflow.svg';
-import iconKimiDark from '@/assets/icons/kimi-dark.svg';
-import iconKimiLight from '@/assets/icons/kimi-light.svg';
-import iconQwen from '@/assets/icons/qwen.svg';
 import iconVertex from '@/assets/icons/vertex.svg';
 import { useAuthFilesData } from '@/features/authFiles/hooks/useAuthFilesData';
 import { useAuthFilesModels } from '@/features/authFiles/hooks/useAuthFilesModels';
@@ -82,13 +76,8 @@ const BATCH_BAR_HIDDEN_TRANSFORM = 'translateX(-50%) translateY(56px)';
 const AUTH_FILE_FILTER_ICONS: Record<string, string | { light: string; dark: string }> = {
   antigravity: iconAntigravity,
   aistudio: iconGemini,
-  claude: iconClaude,
-  codex: iconCodex,
   gemini: iconGemini,
   'gemini-cli': iconGemini,
-  iflow: iconIflow,
-  kimi: { light: iconKimiLight, dark: iconKimiDark },
-  qwen: iconQwen,
   vertex: iconVertex,
 };
 

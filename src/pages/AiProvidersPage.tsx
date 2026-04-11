@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   AmpcodeSection,
-  ClaudeSection,
-  CodexSection,
   GeminiSection,
-  OpenAISection,
   VertexSection,
   ProviderNav,
   useProviderStats,
@@ -17,15 +14,14 @@ import {
 } from '@/components/providers/utils';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { ampcodeApi, providersApi } from '@/services/api';
-import { useAuthStore, useConfigStore, useNotificationStore, useThemeStore } from '@/stores';
-import type { GeminiKeyConfig, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
+import { useAuthStore, useConfigStore, useNotificationStore } from '@/stores';
+import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
 import styles from './AiProvidersPage.module.scss';
 
 export function AiProvidersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showNotification, showConfirmation } = useNotificationStore();
-  const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
 
   const config = useConfigStore((state) => state.config);
@@ -41,17 +37,8 @@ export function AiProvidersPage() {
   const [geminiKeys, setGeminiKeys] = useState<GeminiKeyConfig[]>(
     () => config?.geminiApiKeys || []
   );
-  const [codexConfigs, setCodexConfigs] = useState<ProviderKeyConfig[]>(
-    () => config?.codexApiKeys || []
-  );
-  const [claudeConfigs, setClaudeConfigs] = useState<ProviderKeyConfig[]>(
-    () => config?.claudeApiKeys || []
-  );
   const [vertexConfigs, setVertexConfigs] = useState<ProviderKeyConfig[]>(
     () => config?.vertexApiKeys || []
-  );
-  const [openaiProviders, setOpenaiProviders] = useState<OpenAIProviderConfig[]>(
-    () => config?.openaiCompatibility || []
   );
 
   const [configSwitchingKey, setConfigSwitchingKey] = useState<string | null>(null);
@@ -86,10 +73,7 @@ export function AiProvidersPage() {
 
       const data = configResult.value;
       setGeminiKeys(data?.geminiApiKeys || []);
-      setCodexConfigs(data?.codexApiKeys || []);
-      setClaudeConfigs(data?.claudeApiKeys || []);
       setVertexConfigs(data?.vertexApiKeys || []);
-      setOpenaiProviders(data?.openaiCompatibility || []);
 
       if (vertexResult.status === 'fulfilled') {
         setVertexConfigs(vertexResult.value || []);
@@ -118,17 +102,8 @@ export function AiProvidersPage() {
 
   useEffect(() => {
     if (config?.geminiApiKeys) setGeminiKeys(config.geminiApiKeys);
-    if (config?.codexApiKeys) setCodexConfigs(config.codexApiKeys);
-    if (config?.claudeApiKeys) setClaudeConfigs(config.claudeApiKeys);
     if (config?.vertexApiKeys) setVertexConfigs(config.vertexApiKeys);
-    if (config?.openaiCompatibility) setOpenaiProviders(config.openaiCompatibility);
-  }, [
-    config?.geminiApiKeys,
-    config?.codexApiKeys,
-    config?.claudeApiKeys,
-    config?.vertexApiKeys,
-    config?.openaiCompatibility,
-  ]);
+  }, [config?.geminiApiKeys, config?.vertexApiKeys]);
 
   useHeaderRefresh(refreshKeyStats);
 
@@ -164,7 +139,7 @@ export function AiProvidersPage() {
   };
 
   const setConfigEnabled = async (
-    provider: 'gemini' | 'codex' | 'claude' | 'vertex',
+    provider: 'gemini' | 'vertex',
     index: number,
     enabled: boolean
   ) => {
@@ -204,104 +179,39 @@ export function AiProvidersPage() {
       return;
     }
 
-    const source =
-      provider === 'codex'
-        ? codexConfigs
-        : provider === 'claude'
-          ? claudeConfigs
-          : vertexConfigs;
-    const current = source[index];
+    // vertex
+    const current = vertexConfigs[index];
     if (!current) return;
 
     const switchingKey = `${provider}:${current.apiKey}`;
     setConfigSwitchingKey(switchingKey);
 
-    const previousList = source;
+    const previousList = vertexConfigs;
     const nextExcluded = enabled
       ? withoutDisableAllModelsRule(current.excludedModels)
       : withDisableAllModelsRule(current.excludedModels);
     const nextItem: ProviderKeyConfig = { ...current, excludedModels: nextExcluded };
     const nextList = previousList.map((item, idx) => (idx === index ? nextItem : item));
 
-    if (provider === 'codex') {
-      setCodexConfigs(nextList);
-      updateConfigValue('codex-api-key', nextList);
-      clearCache('codex-api-key');
-    } else if (provider === 'claude') {
-      setClaudeConfigs(nextList);
-      updateConfigValue('claude-api-key', nextList);
-      clearCache('claude-api-key');
-    } else {
-      setVertexConfigs(nextList);
-      updateConfigValue('vertex-api-key', nextList);
-      clearCache('vertex-api-key');
-    }
+    setVertexConfigs(nextList);
+    updateConfigValue('vertex-api-key', nextList);
+    clearCache('vertex-api-key');
 
     try {
-      if (provider === 'codex') {
-        await providersApi.saveCodexConfigs(nextList);
-      } else if (provider === 'claude') {
-        await providersApi.saveClaudeConfigs(nextList);
-      } else {
-        await providersApi.saveVertexConfigs(nextList);
-      }
+      await providersApi.saveVertexConfigs(nextList);
       showNotification(
         enabled ? t('notification.config_enabled') : t('notification.config_disabled'),
         'success'
       );
     } catch (err: unknown) {
       const message = getErrorMessage(err);
-      if (provider === 'codex') {
-        setCodexConfigs(previousList);
-        updateConfigValue('codex-api-key', previousList);
-        clearCache('codex-api-key');
-      } else if (provider === 'claude') {
-        setClaudeConfigs(previousList);
-        updateConfigValue('claude-api-key', previousList);
-        clearCache('claude-api-key');
-      } else {
-        setVertexConfigs(previousList);
-        updateConfigValue('vertex-api-key', previousList);
-        clearCache('vertex-api-key');
-      }
+      setVertexConfigs(previousList);
+      updateConfigValue('vertex-api-key', previousList);
+      clearCache('vertex-api-key');
       showNotification(`${t('notification.update_failed')}: ${message}`, 'error');
     } finally {
       setConfigSwitchingKey(null);
     }
-  };
-
-  const deleteProviderEntry = async (type: 'codex' | 'claude', index: number) => {
-    const source = type === 'codex' ? codexConfigs : claudeConfigs;
-    const entry = source[index];
-    if (!entry) return;
-    showConfirmation({
-      title: t(`ai_providers.${type}_delete_title`, { defaultValue: `Delete ${type === 'codex' ? 'Codex' : 'Claude'} Config` }),
-      message: t(`ai_providers.${type}_delete_confirm`),
-      variant: 'danger',
-      confirmText: t('common.confirm'),
-      onConfirm: async () => {
-        try {
-          if (type === 'codex') {
-            await providersApi.deleteCodexConfig(entry.apiKey);
-            const next = codexConfigs.filter((_, idx) => idx !== index);
-            setCodexConfigs(next);
-            updateConfigValue('codex-api-key', next);
-            clearCache('codex-api-key');
-            showNotification(t('notification.codex_config_deleted'), 'success');
-          } else {
-            await providersApi.deleteClaudeConfig(entry.apiKey);
-            const next = claudeConfigs.filter((_, idx) => idx !== index);
-            setClaudeConfigs(next);
-            updateConfigValue('claude-api-key', next);
-            clearCache('claude-api-key');
-            showNotification(t('notification.claude_config_deleted'), 'success');
-          }
-        } catch (err: unknown) {
-          const message = getErrorMessage(err);
-          showNotification(`${t('notification.delete_failed')}: ${message}`, 'error');
-        }
-      },
-    });
   };
 
   const deleteVertex = async (index: number) => {
@@ -320,30 +230,6 @@ export function AiProvidersPage() {
           updateConfigValue('vertex-api-key', next);
           clearCache('vertex-api-key');
           showNotification(t('notification.vertex_config_deleted'), 'success');
-        } catch (err: unknown) {
-          const message = getErrorMessage(err);
-          showNotification(`${t('notification.delete_failed')}: ${message}`, 'error');
-        }
-      },
-    });
-  };
-
-  const deleteOpenai = async (index: number) => {
-    const entry = openaiProviders[index];
-    if (!entry) return;
-    showConfirmation({
-      title: t('ai_providers.openai_delete_title', { defaultValue: 'Delete OpenAI Provider' }),
-      message: t('ai_providers.openai_delete_confirm'),
-      variant: 'danger',
-      confirmText: t('common.confirm'),
-      onConfirm: async () => {
-        try {
-          await providersApi.deleteOpenAIProvider(entry.name);
-          const next = openaiProviders.filter((_, idx) => idx !== index);
-          setOpenaiProviders(next);
-          updateConfigValue('openai-compatibility', next);
-          clearCache('openai-compatibility');
-          showNotification(t('notification.openai_provider_deleted'), 'success');
         } catch (err: unknown) {
           const message = getErrorMessage(err);
           showNotification(`${t('notification.delete_failed')}: ${message}`, 'error');
@@ -373,36 +259,6 @@ export function AiProvidersPage() {
           />
         </div>
 
-        <div id="provider-codex">
-          <CodexSection
-            configs={codexConfigs}
-            keyStats={keyStats}
-            usageDetails={usageDetails}
-            loading={loading}
-            disableControls={disableControls}
-            isSwitching={isSwitching}
-            onAdd={() => openEditor('/ai-providers/codex/new')}
-            onEdit={(index) => openEditor(`/ai-providers/codex/${index}`)}
-            onDelete={(index) => void deleteProviderEntry('codex', index)}
-            onToggle={(index, enabled) => void setConfigEnabled('codex', index, enabled)}
-          />
-        </div>
-
-        <div id="provider-claude">
-          <ClaudeSection
-            configs={claudeConfigs}
-            keyStats={keyStats}
-            usageDetails={usageDetails}
-            loading={loading}
-            disableControls={disableControls}
-            isSwitching={isSwitching}
-            onAdd={() => openEditor('/ai-providers/claude/new')}
-            onEdit={(index) => openEditor(`/ai-providers/claude/${index}`)}
-            onDelete={(index) => void deleteProviderEntry('claude', index)}
-            onToggle={(index, enabled) => void setConfigEnabled('claude', index, enabled)}
-          />
-        </div>
-
         <div id="provider-vertex">
           <VertexSection
             configs={vertexConfigs}
@@ -425,21 +281,6 @@ export function AiProvidersPage() {
             disableControls={disableControls}
             isSwitching={isSwitching}
             onEdit={() => openEditor('/ai-providers/ampcode')}
-          />
-        </div>
-
-        <div id="provider-openai">
-          <OpenAISection
-            configs={openaiProviders}
-            keyStats={keyStats}
-            usageDetails={usageDetails}
-            loading={loading}
-            disableControls={disableControls}
-            isSwitching={isSwitching}
-            resolvedTheme={resolvedTheme}
-            onAdd={() => openEditor('/ai-providers/openai/new')}
-            onEdit={(index) => openEditor(`/ai-providers/openai/${index}`)}
-            onDelete={deleteOpenai}
           />
         </div>
       </div>

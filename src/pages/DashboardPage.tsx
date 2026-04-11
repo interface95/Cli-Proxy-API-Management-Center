@@ -22,9 +22,7 @@ interface QuickStat {
 
 interface ProviderStats {
   gemini: number | null;
-  codex: number | null;
-  claude: number | null;
-  openai: number | null;
+  vertex: number | null;
 }
 
 export function DashboardPage() {
@@ -49,9 +47,7 @@ export function DashboardPage() {
 
   const [providerStats, setProviderStats] = useState<ProviderStats>({
     gemini: null,
-    codex: null,
-    claude: null,
-    openai: null
+    vertex: null
   });
 
   const [loading, setLoading] = useState(true);
@@ -128,13 +124,11 @@ export function DashboardPage() {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const [keysRes, filesRes, geminiRes, codexRes, claudeRes, openaiRes] = await Promise.allSettled([
+        const [keysRes, filesRes, geminiRes, vertexRes] = await Promise.allSettled([
           apiKeysApi.list(),
           authFilesApi.list(),
           providersApi.getGeminiKeys(),
-          providersApi.getCodexConfigs(),
-          providersApi.getClaudeConfigs(),
-          providersApi.getOpenAIProviders()
+          providersApi.getVertexConfigs()
         ]);
 
         setStats({
@@ -144,9 +138,7 @@ export function DashboardPage() {
 
         setProviderStats({
           gemini: geminiRes.status === 'fulfilled' ? geminiRes.value.length : null,
-          codex: codexRes.status === 'fulfilled' ? codexRes.value.length : null,
-          claude: claudeRes.status === 'fulfilled' ? claudeRes.value.length : null,
-          openai: openaiRes.status === 'fulfilled' ? openaiRes.value.length : null
+          vertex: vertexRes.status === 'fulfilled' ? vertexRes.value.length : null
         });
       } finally {
         setLoading(false);
@@ -163,20 +155,11 @@ export function DashboardPage() {
 
   // Calculate total provider keys only when all provider stats are available.
   const providerStatsReady =
-    providerStats.gemini !== null &&
-    providerStats.codex !== null &&
-    providerStats.claude !== null &&
-    providerStats.openai !== null;
+    providerStats.gemini !== null && providerStats.vertex !== null;
   const hasProviderStats =
-    providerStats.gemini !== null ||
-    providerStats.codex !== null ||
-    providerStats.claude !== null ||
-    providerStats.openai !== null;
+    providerStats.gemini !== null || providerStats.vertex !== null;
   const totalProviderKeys = providerStatsReady
-    ? (providerStats.gemini ?? 0) +
-      (providerStats.codex ?? 0) +
-      (providerStats.claude ?? 0) +
-      (providerStats.openai ?? 0)
+    ? (providerStats.gemini ?? 0) + (providerStats.vertex ?? 0)
     : 0;
 
   const quickStats: QuickStat[] = [
@@ -197,9 +180,7 @@ export function DashboardPage() {
       sublabel: hasProviderStats
         ? t('dashboard.provider_keys_detail', {
             gemini: providerStats.gemini ?? '-',
-            codex: providerStats.codex ?? '-',
-            claude: providerStats.claude ?? '-',
-            openai: providerStats.openai ?? '-'
+            vertex: providerStats.vertex ?? '-'
           })
         : undefined
     },
