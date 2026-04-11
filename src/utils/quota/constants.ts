@@ -10,10 +10,6 @@ import type {
 
 // Theme colors for type badges
 export const TYPE_COLORS: Record<string, TypeColorSet> = {
-  qwen: {
-    light: { bg: '#e8f5e9', text: '#2e7d32' },
-    dark: { bg: '#1b5e20', text: '#81c784' },
-  },
   gemini: {
     light: { bg: '#e3f2fd', text: '#1565c0' },
     dark: { bg: '#0d47a1', text: '#64b5f6' },
@@ -26,25 +22,13 @@ export const TYPE_COLORS: Record<string, TypeColorSet> = {
     light: { bg: '#f0f2f5', text: '#2f343c' },
     dark: { bg: '#373c42', text: '#cfd3db' },
   },
-  claude: {
-    light: { bg: '#fce4ec', text: '#c2185b' },
-    dark: { bg: '#880e4f', text: '#f48fb1' },
-  },
-  codex: {
-    light: { bg: '#fff3e0', text: '#ef6c00' },
-    dark: { bg: '#e65100', text: '#ffb74d' },
-  },
-  kimi: {
-    light: { bg: '#fff4e5', text: '#ad6800' },
-    dark: { bg: '#7c4a03', text: '#ffd591' },
+  vertex: {
+    light: { bg: '#ede7f6', text: '#4527a0' },
+    dark: { bg: '#311b92', text: '#b39ddb' },
   },
   antigravity: {
     light: { bg: '#e0f7fa', text: '#006064' },
     dark: { bg: '#004d40', text: '#80deea' },
-  },
-  iflow: {
-    light: { bg: '#f3e5f5', text: '#7b1fa2' },
-    dark: { bg: '#4a148c', text: '#ce93d8' },
   },
   empty: {
     light: { bg: '#f5f5f5', text: '#616161' },
@@ -157,40 +141,3 @@ export const GEMINI_CLI_GROUP_LOOKUP = new Map(
 );
 
 export const GEMINI_CLI_IGNORED_MODEL_PREFIXES = ['gemini-2.0-flash'];
-
-// Claude API configuration
-export const CLAUDE_PROFILE_URL = 'https://api.anthropic.com/api/oauth/profile';
-
-export const CLAUDE_USAGE_URL = 'https://api.anthropic.com/api/oauth/usage';
-
-export const CLAUDE_REQUEST_HEADERS = {
-  Authorization: 'Bearer $TOKEN$',
-  'Content-Type': 'application/json',
-  'anthropic-beta': 'oauth-2025-04-20',
-};
-
-export const CLAUDE_USAGE_WINDOW_KEYS = [
-  { key: 'five_hour', id: 'five-hour', labelKey: 'claude_quota.five_hour' },
-  { key: 'seven_day', id: 'seven-day', labelKey: 'claude_quota.seven_day' },
-  { key: 'seven_day_oauth_apps', id: 'seven-day-oauth-apps', labelKey: 'claude_quota.seven_day_oauth_apps' },
-  { key: 'seven_day_opus', id: 'seven-day-opus', labelKey: 'claude_quota.seven_day_opus' },
-  { key: 'seven_day_sonnet', id: 'seven-day-sonnet', labelKey: 'claude_quota.seven_day_sonnet' },
-  { key: 'seven_day_cowork', id: 'seven-day-cowork', labelKey: 'claude_quota.seven_day_cowork' },
-  { key: 'iguana_necktie', id: 'iguana-necktie', labelKey: 'claude_quota.iguana_necktie' },
-] as const;
-
-// Codex API configuration
-export const CODEX_USAGE_URL = 'https://chatgpt.com/backend-api/wham/usage';
-
-export const CODEX_REQUEST_HEADERS = {
-  Authorization: 'Bearer $TOKEN$',
-  'Content-Type': 'application/json',
-  'User-Agent': 'codex_cli_rs/0.76.0 (Debian 13.0.0; x86_64) WindowsTerminal',
-};
-
-// Kimi API configuration
-export const KIMI_USAGE_URL = 'https://api.kimi.com/coding/v1/usages';
-
-export const KIMI_REQUEST_HEADERS = {
-  Authorization: 'Bearer $TOKEN$',
-};

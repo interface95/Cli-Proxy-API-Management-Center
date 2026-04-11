@@ -344,7 +344,6 @@ const PAYLOAD_PROTOCOL_VALUES = [
   'openai-response',
   'gemini',
   'claude',
-  'codex',
   'antigravity',
 ] as const;
 type PayloadProtocol = (typeof PAYLOAD_PROTOCOL_VALUES)[number];
@@ -864,11 +863,6 @@ export const VISUAL_CONFIG_PROTOCOL_OPTIONS = [
     value: 'claude',
     labelKey: 'config_management.visual.payload_rules.provider_claude',
     defaultLabel: 'Claude',
-  },
-  {
-    value: 'codex',
-    labelKey: 'config_management.visual.payload_rules.provider_codex',
-    defaultLabel: 'Codex',
   },
   {
     value: 'antigravity',

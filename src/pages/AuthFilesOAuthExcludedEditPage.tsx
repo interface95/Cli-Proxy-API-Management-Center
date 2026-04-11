@@ -24,11 +24,6 @@ const OAUTH_PROVIDER_PRESETS = [
   'vertex',
   'aistudio',
   'antigravity',
-  'claude',
-  'codex',
-  'qwen',
-  'kimi',
-  'iflow',
 ];
 
 const OAUTH_PROVIDER_EXCLUDES = new Set(['all', 'unknown', 'empty']);

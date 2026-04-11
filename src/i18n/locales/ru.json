@@ -676,17 +676,6 @@
     "upgrade_required_desc": "Текущая версия сервера не поддерживает API псевдонимов моделей OAuth. Обновите CLI Proxy API (CPA) до последней версии."
   },
   "auth_login": {
-    "anthropic_oauth_title": "Anthropic OAuth",
-    "anthropic_oauth_button": "Начать вход Anthropic",
-    "anthropic_oauth_hint": "Выполните вход в сервис Anthropic (Claude) через OAuth и автоматически получите/сохраните файлы авторизации.",
-    "anthropic_oauth_url_label": "URL авторизации:",
-    "anthropic_open_link": "Открыть ссылку",
-    "anthropic_copy_link": "Скопировать ссылку",
-    "anthropic_oauth_status_waiting": "Ожидание аутентификации...",
-    "anthropic_oauth_status_success": "Аутентификация успешна!",
-    "anthropic_oauth_status_error": "Ошибка аутентификации:",
-    "anthropic_oauth_start_error": "Не удалось запустить Anthropic OAuth:",
-    "anthropic_oauth_polling_error": "Не удалось проверить статус аутентификации:",
     "antigravity_oauth_title": "Antigravity OAuth",
     "antigravity_oauth_button": "Начать вход Antigravity",
     "antigravity_oauth_hint": "Выполните вход в сервис Antigravity (Google) через OAuth и автоматически получите/сохраните файлы авторизации.",

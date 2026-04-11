@@ -678,17 +678,6 @@
     "upgrade_required_desc": "The current server does not support the OAuth model aliases API. Please upgrade to the latest CLI Proxy API (CPA) version."
   },
   "auth_login": {
-    "anthropic_oauth_title": "Anthropic OAuth",
-    "anthropic_oauth_button": "Start Anthropic Login",
-    "anthropic_oauth_hint": "Login to Anthropic (Claude) service through OAuth flow, automatically obtain and save authentication files.",
-    "anthropic_oauth_url_label": "Authorization URL:",
-    "anthropic_open_link": "Open Link",
-    "anthropic_copy_link": "Copy Link",
-    "anthropic_oauth_status_waiting": "Waiting for authentication...",
-    "anthropic_oauth_status_success": "Authentication successful!",
-    "anthropic_oauth_status_error": "Authentication failed:",
-    "anthropic_oauth_start_error": "Failed to start Anthropic OAuth:",
-    "anthropic_oauth_polling_error": "Failed to check authentication status:",
     "antigravity_oauth_title": "Antigravity OAuth",
     "antigravity_oauth_button": "Start Antigravity Login",
     "antigravity_oauth_hint": "Login to Antigravity service (Google account) through OAuth flow, automatically obtain and save authentication files.",

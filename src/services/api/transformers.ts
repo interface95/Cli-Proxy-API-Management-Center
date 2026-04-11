@@ -3,7 +3,6 @@ import type {
   CloakConfig,
   GeminiKeyConfig,
   ModelAlias,
-  OpenAIProviderConfig,
   ProviderKeyConfig,
   AmpcodeConfig,
   AmpcodeModelMapping,
@@ -207,43 +206,6 @@ const normalizeGeminiKeyConfig = (item: unknown): GeminiKeyConfig | null => {
   return config;
 };
 
-const normalizeOpenAIProvider = (provider: unknown): OpenAIProviderConfig | null => {
-  if (!isRecord(provider)) return null;
-  const name = provider.name || provider.id;
-  const baseUrl = provider['base-url'] ?? provider.baseUrl;
-  if (!name || !baseUrl) return null;
-
-  let apiKeyEntries: ApiKeyEntry[] = [];
-  if (Array.isArray(provider['api-key-entries'])) {
-    apiKeyEntries = provider['api-key-entries']
-      .map((entry) => normalizeApiKeyEntry(entry))
-      .filter(Boolean) as ApiKeyEntry[];
-  } else if (Array.isArray(provider['api-keys'])) {
-    apiKeyEntries = provider['api-keys']
-      .map((key) => normalizeApiKeyEntry({ 'api-key': key }))
-      .filter(Boolean) as ApiKeyEntry[];
-  }
-
-  const headers = normalizeHeaders(provider.headers);
-  const models = normalizeModelAliases(provider.models);
-  const priority = provider.priority ?? provider['priority'];
-  const testModel = provider['test-model'] ?? provider.testModel;
-
-  const result: OpenAIProviderConfig = {
-    name: String(name),
-    baseUrl: String(baseUrl),
-    apiKeyEntries
-  };
-
-  const prefix = normalizePrefix(provider.prefix ?? provider['prefix']);
-  if (prefix) result.prefix = prefix;
-  if (headers) result.headers = headers;
-  if (models.length) result.models = models;
-  if (priority !== undefined) result.priority = Number(priority);
-  if (testModel) result.testModel = String(testModel);
-  return result;
-};
-
 const normalizeOauthExcluded = (payload: unknown): Record<string, string[]> | undefined => {
   if (!isRecord(payload)) return undefined;
   const source = payload['oauth-excluded-models'] ?? payload.items ?? payload;
@@ -405,32 +367,11 @@ export const normalizeConfigResponse = (raw: unknown): Config => {
       .filter(Boolean) as GeminiKeyConfig[];
   }
 
-  const codexList = raw['codex-api-key'] ?? raw.codexApiKey ?? raw.codexApiKeys;
-  if (Array.isArray(codexList)) {
-    config.codexApiKeys = codexList
-      .map((item) => normalizeProviderKeyConfig(item))
-      .filter(Boolean) as ProviderKeyConfig[];
-  }
-
-  const claudeList = raw['claude-api-key'] ?? raw.claudeApiKey ?? raw.claudeApiKeys;
-  if (Array.isArray(claudeList)) {
-    config.claudeApiKeys = claudeList
-      .map((item) => normalizeProviderKeyConfig(item))
-      .filter(Boolean) as ProviderKeyConfig[];
-  }
-
   const vertexList = raw['vertex-api-key'] ?? raw.vertexApiKey ?? raw.vertexApiKeys;
   if (Array.isArray(vertexList)) {
     config.vertexApiKeys = vertexList
       .map((item) => normalizeProviderKeyConfig(item))
       .filter(Boolean) as ProviderKeyConfig[];
-  }
-
-  const openaiList = raw['openai-compatibility'] ?? raw.openaiCompatibility ?? raw.openAICompatibility;
-  if (Array.isArray(openaiList)) {
-    config.openaiCompatibility = openaiList
-      .map((item) => normalizeOpenAIProvider(item))
-      .filter(Boolean) as OpenAIProviderConfig[];
   }
 
   const ampcode = normalizeAmpcodeConfig(raw.ampcode);
@@ -450,7 +391,6 @@ export {
   normalizeApiKeyEntry,
   normalizeGeminiKeyConfig,
   normalizeModelAliases,
-  normalizeOpenAIProvider,
   normalizeProviderKeyConfig,
   normalizeHeaders,
   normalizeExcludedModels,

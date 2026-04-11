@@ -53,20 +53,12 @@ export const NOTIFICATION_DURATION_MS = 3000;
 
 // OAuth 卡片 ID 列表
 export const OAUTH_CARD_IDS = [
-  'codex-oauth-card',
-  'anthropic-oauth-card',
   'antigravity-oauth-card',
-  'gemini-cli-oauth-card',
-  'kimi-oauth-card',
-  'qwen-oauth-card'
+  'gemini-cli-oauth-card'
 ];
 export const OAUTH_PROVIDERS = {
-  CODEX: 'codex',
-  ANTHROPIC: 'anthropic',
   ANTIGRAVITY: 'antigravity',
-  GEMINI_CLI: 'gemini-cli',
-  KIMI: 'kimi',
-  QWEN: 'qwen'
+  GEMINI_CLI: 'gemini-cli'
 } as const;
 
 // API 端点

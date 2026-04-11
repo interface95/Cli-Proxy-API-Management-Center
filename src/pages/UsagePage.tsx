@@ -369,10 +369,10 @@ export function UsagePage() {
         usage={filteredUsage}
         loading={loading}
         geminiKeys={config?.geminiApiKeys || []}
-        claudeConfigs={config?.claudeApiKeys || []}
-        codexConfigs={config?.codexApiKeys || []}
+        claudeConfigs={[]}
+        codexConfigs={[]}
         vertexConfigs={config?.vertexApiKeys || []}
-        openaiProviders={config?.openaiCompatibility || []}
+        openaiProviders={[]}
       />
 
       {/* Credential Stats */}
@@ -380,10 +380,10 @@ export function UsagePage() {
         usage={filteredUsage}
         loading={loading}
         geminiKeys={config?.geminiApiKeys || []}
-        claudeConfigs={config?.claudeApiKeys || []}
-        codexConfigs={config?.codexApiKeys || []}
+        claudeConfigs={[]}
+        codexConfigs={[]}
         vertexConfigs={config?.vertexApiKeys || []}
-        openaiProviders={config?.openaiCompatibility || []}
+        openaiProviders={[]}
       />
 
       {/* Price Settings */}
