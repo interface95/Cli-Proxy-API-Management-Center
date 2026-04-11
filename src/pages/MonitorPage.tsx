@@ -100,38 +100,11 @@ export function MonitorPage() {
       const typeMap: Record<string, string> = {};
 
       // 并行加载所有提供商配置和认证文件
-      const [openaiProviders, geminiKeys, claudeConfigs, codexConfigs, vertexConfigs, authFilesResponse] = await Promise.all([
-        providersApi.getOpenAIProviders().catch(() => []),
+      const [geminiKeys, vertexConfigs, authFilesResponse] = await Promise.all([
         providersApi.getGeminiKeys().catch(() => []),
-        providersApi.getClaudeConfigs().catch(() => []),
-        providersApi.getCodexConfigs().catch(() => []),
         providersApi.getVertexConfigs().catch(() => []),
         authFilesApi.list().catch(() => ({ files: [] })),
       ]);
-
-      // 处理 OpenAI 兼容提供商
-      openaiProviders.forEach((provider) => {
-        const providerName = provider.headers?.['X-Provider'] || provider.name || 'unknown';
-        const modelSet = new Set<string>();
-        (provider.models || []).forEach((m) => {
-          if (m.alias) modelSet.add(m.alias);
-          if (m.name) modelSet.add(m.name);
-        });
-        const apiKeyEntries = provider.apiKeyEntries || [];
-        apiKeyEntries.forEach((entry) => {
-          const apiKey = entry.apiKey;
-          if (apiKey) {
-            map[apiKey] = providerName;
-            modelsMap[apiKey] = modelSet;
-            typeMap[apiKey] = 'OpenAI';
-          }
-        });
-        if (provider.name) {
-          map[provider.name] = providerName;
-          modelsMap[provider.name] = modelSet;
-          typeMap[provider.name] = 'OpenAI';
-        }
-      });
 
       // 处理 Gemini 提供商
       geminiKeys.forEach((config) => {
@@ -140,43 +113,6 @@ export function MonitorPage() {
           const providerName = config.prefix?.trim() || 'Gemini';
           map[apiKey] = providerName;
           typeMap[apiKey] = 'Gemini';
-        }
-      });
-
-      // 处理 Claude 提供商
-      claudeConfigs.forEach((config) => {
-        const apiKey = config.apiKey;
-        if (apiKey) {
-          const providerName = config.prefix?.trim() || 'Claude';
-          map[apiKey] = providerName;
-          typeMap[apiKey] = 'Claude';
-          // 存储模型集合
-          if (config.models && config.models.length > 0) {
-            const modelSet = new Set<string>();
-            config.models.forEach((m) => {
-              if (m.alias) modelSet.add(m.alias);
-              if (m.name) modelSet.add(m.name);
-            });
-            modelsMap[apiKey] = modelSet;
-          }
-        }
-      });
-
-      // 处理 Codex 提供商
-      codexConfigs.forEach((config) => {
-        const apiKey = config.apiKey;
-        if (apiKey) {
-          const providerName = config.prefix?.trim() || 'Codex';
-          map[apiKey] = providerName;
-          typeMap[apiKey] = 'Codex';
-          if (config.models && config.models.length > 0) {
-            const modelSet = new Set<string>();
-            config.models.forEach((m) => {
-              if (m.alias) modelSet.add(m.alias);
-              if (m.name) modelSet.add(m.name);
-            });
-            modelsMap[apiKey] = modelSet;
-          }
         }
       });
 
@@ -205,10 +141,7 @@ export function MonitorPage() {
       // 构建 sourceInfoMap（与请求事件明细相同的解析逻辑）
       setSourceInfoMap(buildSourceInfoMap({
         geminiApiKeys: geminiKeys,
-        claudeApiKeys: claudeConfigs,
-        codexApiKeys: codexConfigs,
         vertexApiKeys: vertexConfigs,
-        openaiCompatibility: openaiProviders,
       }));
 
       // 构建 authFileMap（认证文件索引 → 凭证信息）

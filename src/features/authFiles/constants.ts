@@ -12,19 +12,11 @@ export type TypeColorSet = { light: ThemeColors; dark?: ThemeColors };
 export type ResolvedTheme = 'light' | 'dark';
 export type AuthFileModelItem = { id: string; display_name?: string; type?: string; owned_by?: string };
 
-export type QuotaProviderType =
-  | 'antigravity'
-  | 'claude'
-  | 'codex'
-  | 'gemini-cli'
-  | 'kimi';
+export type QuotaProviderType = 'antigravity' | 'gemini-cli';
 
 export const QUOTA_PROVIDER_TYPES = new Set<QuotaProviderType>([
   'antigravity',
-  'claude',
-  'codex',
   'gemini-cli',
-  'kimi'
 ]);
 
 export const MIN_CARD_PAGE_SIZE = 3;
@@ -37,14 +29,6 @@ export const FALSY_TEXT_VALUES = new Set(['false', '0', 'no', 'n', 'off']);
 
 // 标签类型颜色配置（对齐重构前 styles.css 的 file-type-badge 颜色）
 export const TYPE_COLORS: Record<string, TypeColorSet> = {
-  qwen: {
-    light: { bg: '#e8f5e9', text: '#2e7d32' },
-    dark: { bg: '#1b5e20', text: '#81c784' }
-  },
-  kimi: {
-    light: { bg: '#fff4e5', text: '#ad6800' },
-    dark: { bg: '#7c4a03', text: '#ffd591' }
-  },
   gemini: {
     light: { bg: '#e3f2fd', text: '#1565c0' },
     dark: { bg: '#0d47a1', text: '#64b5f6' }
@@ -57,25 +41,13 @@ export const TYPE_COLORS: Record<string, TypeColorSet> = {
     light: { bg: '#f0f2f5', text: '#2f343c' },
     dark: { bg: '#373c42', text: '#cfd3db' }
   },
-  claude: {
-    light: { bg: '#fce4ec', text: '#c2185b' },
-    dark: { bg: '#880e4f', text: '#f48fb1' }
-  },
-  codex: {
-    light: { bg: '#fff3e0', text: '#ef6c00' },
-    dark: { bg: '#e65100', text: '#ffb74d' }
-  },
   antigravity: {
     light: { bg: '#e0f7fa', text: '#006064' },
     dark: { bg: '#004d40', text: '#80deea' }
   },
-  iflow: {
-    light: { bg: '#f3e5f5', text: '#7b1fa2' },
-    dark: { bg: '#4a148c', text: '#ce93d8' }
-  },
-  empty: {
-    light: { bg: '#f5f5f5', text: '#616161' },
-    dark: { bg: '#424242', text: '#bdbdbd' }
+  vertex: {
+    light: { bg: '#e8eaf6', text: '#283593' },
+    dark: { bg: '#1a237e', text: '#9fa8da' }
   },
   unknown: {
     light: { bg: '#f0f0f0', text: '#666666', border: '1px dashed #999999' },

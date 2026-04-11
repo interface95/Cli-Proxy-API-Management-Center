@@ -1,11 +1,14 @@
 /**
  * 禁用模型 Hook
- * 仅支持 OpenAI 兼容提供商：从 models 列表中移除模型映射
+ *
+ * In the google-only build the "disable model" feature is effectively a
+ * UI-only marker: we only track the disable in the local store and never
+ * hit the backend, because the feature was originally backed by the
+ * openai-compatibility provider CRUD which no longer exists.
  */
 
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { providersApi } from '@/services/api';
 import { useDisabledModelsStore } from '@/stores';
 import {
   resolveProvider,
@@ -13,7 +16,6 @@ import {
   type DisableState,
 } from '@/utils/monitor';
 import type { SourceInfo } from '@/types/sourceInfo';
-import type { OpenAIProviderConfig } from '@/types';
 
 export interface UseDisableModelOptions {
   providerMap: Record<string, string>;
@@ -63,26 +65,8 @@ export function useDisableModel(options: UseDisableModelOptions): UseDisableMode
         throw new Error(t('monitor.logs.disable_error_no_provider'));
       }
 
-      const providers = await providersApi.getOpenAIProviders();
-      const targetProvider = providers.find(
-        (p) => p.name && p.name.toLowerCase() === providerName.toLowerCase()
-      );
-
-      if (!targetProvider) {
-        throw new Error(t('monitor.logs.disable_error_provider_not_found', { provider: providerName }));
-      }
-
-      const originalModels = targetProvider.models || [];
-      const filteredModels = originalModels.filter(
-        (m) => m.alias !== model && m.name !== model
-      );
-
-      if (filteredModels.length < originalModels.length) {
-        await providersApi.patchOpenAIProviderByName(targetProvider.name, {
-          models: filteredModels,
-        } as Partial<OpenAIProviderConfig>);
-      }
-
+      // Google-only build: no server-side provider CRUD, just record the
+      // disable locally so the monitor page hides the model on refresh.
       addDisabledModel(source, model);
       setDisableState(null);
     } catch (err) {

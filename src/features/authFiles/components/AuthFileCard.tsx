@@ -97,15 +97,9 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const providerCardClass =
     quotaType === 'antigravity'
       ? styles.antigravityCard
-      : quotaType === 'claude'
-        ? styles.claudeCard
-      : quotaType === 'codex'
-        ? styles.codexCard
-        : quotaType === 'gemini-cli'
-            ? styles.geminiCliCard
-            : quotaType === 'kimi'
-              ? styles.kimiCard
-            : '';
+      : quotaType === 'gemini-cli'
+        ? styles.geminiCliCard
+        : '';
 
   const rawAuthIndex = file['auth_index'] ?? file.authIndex;
   const authIndexKey = normalizeAuthIndex(rawAuthIndex);
