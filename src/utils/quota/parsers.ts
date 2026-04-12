@@ -2,7 +2,7 @@
  * Normalization and parsing functions for quota data.
  */
 
-import type { ClaudeUsagePayload, CodexUsagePayload, GeminiCliCodeAssistPayload, GeminiCliQuotaPayload, KimiUsagePayload } from '@/types';
+import type { GeminiCliCodeAssistPayload, GeminiCliQuotaPayload } from '@/types';
 import { normalizeAuthIndex } from '@/utils/usage';
 
 const GEMINI_CLI_MODEL_SUFFIX = '_vertex';
@@ -140,39 +140,6 @@ export function parseAntigravityPayload(payload: unknown): Record<string, unknow
   return parsed;
 }
 
-export function parseClaudeUsagePayload(payload: unknown): ClaudeUsagePayload | null {
-  if (payload === undefined || payload === null) return null;
-  if (typeof payload === 'string') {
-    const trimmed = payload.trim();
-    if (!trimmed) return null;
-    try {
-      return JSON.parse(trimmed) as ClaudeUsagePayload;
-    } catch {
-      return null;
-    }
-  }
-  if (typeof payload === 'object') {
-    return payload as ClaudeUsagePayload;
-  }
-  return null;
-}
-
-export function parseCodexUsagePayload(payload: unknown): CodexUsagePayload | null {
-  if (payload === undefined || payload === null) return null;
-  if (typeof payload === 'string') {
-    const trimmed = payload.trim();
-    if (!trimmed) return null;
-    try {
-      return JSON.parse(trimmed) as CodexUsagePayload;
-    } catch {
-      return null;
-    }
-  }
-  if (typeof payload === 'object') {
-    return payload as CodexUsagePayload;
-  }
-  return null;
-}
 
 export function parseGeminiCliQuotaPayload(payload: unknown): GeminiCliQuotaPayload | null {
   if (payload === undefined || payload === null) return null;
@@ -208,19 +175,3 @@ export function parseGeminiCliCodeAssistPayload(payload: unknown): GeminiCliCode
   return null;
 }
 
-export function parseKimiUsagePayload(payload: unknown): KimiUsagePayload | null {
-  if (payload === undefined || payload === null) return null;
-  if (typeof payload === 'string') {
-    const trimmed = payload.trim();
-    if (!trimmed) return null;
-    try {
-      return JSON.parse(trimmed) as KimiUsagePayload;
-    } catch {
-      return null;
-    }
-  }
-  if (typeof payload === 'object') {
-    return payload as KimiUsagePayload;
-  }
-  return null;
-}
