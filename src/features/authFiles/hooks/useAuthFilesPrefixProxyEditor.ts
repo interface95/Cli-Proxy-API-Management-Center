@@ -28,7 +28,6 @@ export type PrefixProxyCreditsMode = '' | 'off' | 'fallback' | 'always';
 
 export type PrefixProxyEditorState = {
   fileName: string;
-  isCodexFile: boolean;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -129,10 +128,6 @@ const buildPrefixProxyUpdatedText = (editor: PrefixProxyEditorState | null): str
     delete next.allow_overages;
   }
 
-  if (editor.isCodexFile) {
-    next.websocket = editor.websocket;
-  }
-
   if (editor.noteTouched) {
     const noteValue = editor.note.trim();
     if (noteValue) {
@@ -166,14 +161,6 @@ export function useAuthFilesPrefixProxyEditor(
 
   const openPrefixProxyEditor = async (file: Pick<AuthFileItem, 'name' | 'type' | 'provider'>) => {
     const name = file.name;
-    const normalizedType = String(file.type ?? '')
-      .trim()
-      .toLowerCase();
-    const normalizedProvider = String(file.provider ?? '')
-      .trim()
-      .toLowerCase();
-    const isCodexFile = normalizedType === 'codex' || normalizedProvider === 'codex';
-
     if (disableControls) return;
     if (prefixProxyEditor?.fileName === name) {
       setPrefixProxyEditor(null);
@@ -182,7 +169,6 @@ export function useAuthFilesPrefixProxyEditor(
 
     setPrefixProxyEditor({
       fileName: name,
-      isCodexFile,
       loading: true,
       saving: false,
       error: null,
@@ -236,10 +222,6 @@ export function useAuthFilesPrefixProxyEditor(
       }
 
       const json = { ...(parsed as Record<string, unknown>) };
-      if (isCodexFile) {
-        const websocketValue = parseDisableCoolingValue(json.websocket);
-        json.websocket = websocketValue ?? false;
-      }
       const prefix = typeof json.prefix === 'string' ? json.prefix : '';
       const proxyUrl = typeof json.proxy_url === 'string' ? json.proxy_url : '';
       const priority = parsePriorityValue(json.priority);

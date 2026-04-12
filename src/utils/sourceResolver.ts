@@ -1,13 +1,10 @@
-import type { GeminiKeyConfig, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
+import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
 import type { CredentialInfo, SourceInfo } from '@/types/sourceInfo';
 import { buildCandidateUsageSourceIds, normalizeAuthIndex } from '@/utils/usage';
 
 export interface SourceInfoMapInput {
   geminiApiKeys?: GeminiKeyConfig[];
-  claudeApiKeys?: ProviderKeyConfig[];
-  codexApiKeys?: ProviderKeyConfig[];
   vertexApiKeys?: ProviderKeyConfig[];
-  openaiCompatibility?: OpenAIProviderConfig[];
 }
 
 export function buildSourceInfoMap(input: SourceInfoMapInput): Map<string, SourceInfo> {
@@ -28,8 +25,6 @@ export function buildSourceInfoMap(input: SourceInfoMapInput): Map<string, Sourc
     label: string;
   }> = [
     { items: input.geminiApiKeys || [], type: 'gemini', label: 'Gemini' },
-    { items: input.claudeApiKeys || [], type: 'claude', label: 'Claude' },
-    { items: input.codexApiKeys || [], type: 'codex', label: 'Codex' },
     { items: input.vertexApiKeys || [], type: 'vertex', label: 'Vertex' },
   ];
 
@@ -42,17 +37,6 @@ export function buildSourceInfoMap(input: SourceInfoMapInput): Map<string, Sourc
         buildCandidateUsageSourceIds({ apiKey: item.apiKey, prefix: item.prefix })
       );
     });
-  });
-
-  // OpenAI 特殊处理：多 apiKeyEntries
-  (input.openaiCompatibility || []).forEach((provider, providerIndex) => {
-    const displayName = provider.prefix?.trim() || provider.name || `OpenAI #${providerIndex + 1}`;
-    const candidates = new Set<string>();
-    buildCandidateUsageSourceIds({ prefix: provider.prefix }).forEach((id) => candidates.add(id));
-    (provider.apiKeyEntries || []).forEach((entry) => {
-      buildCandidateUsageSourceIds({ apiKey: entry.apiKey }).forEach((id) => candidates.add(id));
-    });
-    registerCandidates(displayName, 'openai', Array.from(candidates));
   });
 
   return map;

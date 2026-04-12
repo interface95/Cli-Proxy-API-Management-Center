@@ -1,10 +1,7 @@
 /**
  * OAuth 相关 API
  *
- * Google-only build: the backend exposes OAuth callbacks only for Antigravity
- * and Gemini CLI.  Third-party provider types (codex / anthropic / kimi /
- * qwen) and the iFlow cookie login were removed from the backend and are
- * dropped here as well.
+ * Google-only build: only Antigravity and Gemini CLI OAuth flows are supported.
  */
 
 import { apiClient } from './client';

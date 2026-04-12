@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { authFilesApi } from '@/services/api/authFiles';
-import type { GeminiKeyConfig, ProviderKeyConfig, OpenAIProviderConfig } from '@/types';
+import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
 import type { AuthFileItem } from '@/types/authFile';
 import type { CredentialInfo } from '@/types/sourceInfo';
 import { buildSourceInfoMap, resolveSourceDisplay } from '@/utils/sourceResolver';
@@ -42,10 +42,7 @@ export interface RequestEventsDetailsCardProps {
   usage: unknown;
   loading: boolean;
   geminiKeys: GeminiKeyConfig[];
-  claudeConfigs: ProviderKeyConfig[];
-  codexConfigs: ProviderKeyConfig[];
   vertexConfigs: ProviderKeyConfig[];
-  openaiProviders: OpenAIProviderConfig[];
 }
 
 const toNumber = (value: unknown): number => {
@@ -65,10 +62,7 @@ export function RequestEventsDetailsCard({
   usage,
   loading,
   geminiKeys,
-  claudeConfigs,
-  codexConfigs,
-  vertexConfigs,
-  openaiProviders
+  vertexConfigs
 }: RequestEventsDetailsCardProps) {
   const { t, i18n } = useTranslation();
 
@@ -106,12 +100,9 @@ export function RequestEventsDetailsCard({
     () =>
       buildSourceInfoMap({
         geminiApiKeys: geminiKeys,
-        claudeApiKeys: claudeConfigs,
-        codexApiKeys: codexConfigs,
         vertexApiKeys: vertexConfigs,
-        openaiCompatibility: openaiProviders,
       }),
-    [claudeConfigs, codexConfigs, geminiKeys, openaiProviders, vertexConfigs]
+    [geminiKeys, vertexConfigs]
   );
 
   const rows = useMemo<RequestEventRow[]>(() => {

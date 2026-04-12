@@ -45,19 +45,6 @@ export const normalizeOpenAIBaseUrl = (baseUrl: string): string => {
   return trimmed;
 };
 
-export const normalizeClaudeBaseUrl = (baseUrl: string): string => {
-  let trimmed = String(baseUrl || '').trim();
-  if (!trimmed) {
-    return 'https://api.anthropic.com';
-  }
-  trimmed = trimmed.replace(/\/?v0\/management\/?$/i, '');
-  trimmed = trimmed.replace(/\/+$/g, '');
-  if (!/^https?:\/\//i.test(trimmed)) {
-    trimmed = `http://${trimmed}`;
-  }
-  return trimmed;
-};
-
 export const buildOpenAIModelsEndpoint = (baseUrl: string): string => {
   const trimmed = normalizeOpenAIBaseUrl(baseUrl);
   if (!trimmed) return '';
@@ -71,18 +58,6 @@ export const buildOpenAIChatCompletionsEndpoint = (baseUrl: string): string => {
     return trimmed;
   }
   return `${trimmed}/chat/completions`;
-};
-
-export const buildClaudeMessagesEndpoint = (baseUrl: string): string => {
-  const trimmed = normalizeClaudeBaseUrl(baseUrl);
-  if (!trimmed) return '';
-  if (trimmed.endsWith('/v1/messages')) {
-    return trimmed;
-  }
-  if (trimmed.endsWith('/v1')) {
-    return `${trimmed}/messages`;
-  }
-  return `${trimmed}/v1/messages`;
 };
 
 // 根据 source (apiKey) 获取统计数据 - 与旧版逻辑一致
