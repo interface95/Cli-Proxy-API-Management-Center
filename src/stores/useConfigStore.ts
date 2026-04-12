@@ -47,7 +47,6 @@ const SECTION_KEYS: RawConfigSection[] = [
   'routing/strategy',
   'api-keys',
   'gemini-api-key',
-  'vertex-api-key',
   'oauth-excluded-models'
 ];
 
@@ -80,8 +79,6 @@ const extractSectionValue = (config: Config | null, section?: RawConfigSection) 
       return config.apiKeys;
     case 'gemini-api-key':
       return config.geminiApiKeys;
-    case 'vertex-api-key':
-      return config.vertexApiKeys;
     case 'oauth-excluded-models':
       return config.oauthExcludedModels;
     default:
@@ -218,8 +215,6 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
         case 'gemini-api-key':
           nextConfig.geminiApiKeys = value as Config['geminiApiKeys'];
           break;
-        case 'vertex-api-key':
-          nextConfig.vertexApiKeys = value as Config['vertexApiKeys'];
           break;
         case 'oauth-excluded-models':
           nextConfig.oauthExcludedModels = value as Config['oauthExcludedModels'];

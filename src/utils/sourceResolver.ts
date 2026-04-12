@@ -1,10 +1,9 @@
-import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
+import type { GeminiKeyConfig } from '@/types';
 import type { CredentialInfo, SourceInfo } from '@/types/sourceInfo';
 import { buildCandidateUsageSourceIds, normalizeAuthIndex } from '@/utils/usage';
 
 export interface SourceInfoMapInput {
   geminiApiKeys?: GeminiKeyConfig[];
-  vertexApiKeys?: ProviderKeyConfig[];
 }
 
 export function buildSourceInfoMap(input: SourceInfoMapInput): Map<string, SourceInfo> {
@@ -25,7 +24,6 @@ export function buildSourceInfoMap(input: SourceInfoMapInput): Map<string, Sourc
     label: string;
   }> = [
     { items: input.geminiApiKeys || [], type: 'gemini', label: 'Gemini' },
-    { items: input.vertexApiKeys || [], type: 'vertex', label: 'Vertex' },
   ];
 
   providers.forEach(({ items, type, label }) => {

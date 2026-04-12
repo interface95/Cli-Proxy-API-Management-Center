@@ -470,7 +470,6 @@ export function MainLayout() {
       if (normalizedPath === '/ai-providers') return aiProvidersIndex;
       if (normalizedPath.startsWith('/ai-providers/')) {
         if (normalizedPath.startsWith('/ai-providers/gemini')) return aiProvidersIndex + 0.1;
-        if (normalizedPath.startsWith('/ai-providers/vertex')) return aiProvidersIndex + 0.2;
         return aiProvidersIndex + 0.05;
       }
     }

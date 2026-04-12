@@ -22,10 +22,6 @@ export const TYPE_COLORS: Record<string, TypeColorSet> = {
     light: { bg: '#f0f2f5', text: '#2f343c' },
     dark: { bg: '#373c42', text: '#cfd3db' },
   },
-  vertex: {
-    light: { bg: '#ede7f6', text: '#4527a0' },
-    dark: { bg: '#311b92', text: '#b39ddb' },
-  },
   antigravity: {
     light: { bg: '#e0f7fa', text: '#006064' },
     dark: { bg: '#004d40', text: '#80deea' },

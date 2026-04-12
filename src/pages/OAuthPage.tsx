@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useNotificationStore, useThemeStore } from '@/stores';
 import { oauthApi, type OAuthProvider } from '@/services/api/oauth';
-import { vertexApi, type VertexImportResponse } from '@/services/api/vertex';
 import { copyToClipboard } from '@/utils/clipboard';
 import styles from './OAuthPage.module.scss';
 import iconAntigravity from '@/assets/icons/antigravity.svg';
 import iconGemini from '@/assets/icons/gemini.svg';
-import iconVertex from '@/assets/icons/vertex.svg';
 
 interface ProviderState {
   url?: string;
@@ -24,22 +22,6 @@ interface ProviderState {
   callbackSubmitting?: boolean;
   callbackStatus?: 'success' | 'error';
   callbackError?: string;
-}
-
-interface VertexImportResult {
-  projectId?: string;
-  email?: string;
-  location?: string;
-  authFile?: string;
-}
-
-interface VertexImportState {
-  file?: File;
-  fileName: string;
-  location: string;
-  loading: boolean;
-  error?: string;
-  result?: VertexImportResult;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -76,13 +58,7 @@ export function OAuthPage() {
   const { showNotification } = useNotificationStore();
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const [states, setStates] = useState<Record<OAuthProvider, ProviderState>>({} as Record<OAuthProvider, ProviderState>);
-  const [vertexState, setVertexState] = useState<VertexImportState>({
-    fileName: '',
-    location: '',
-    loading: false
-  });
   const timers = useRef<Record<string, number>>({});
-  const vertexFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const clearTimers = useCallback(() => {
     Object.values(timers.current).forEach((timer) => window.clearInterval(timer));
@@ -216,64 +192,6 @@ export function OAuthPage() {
     }
   };
 
-  const handleVertexFilePick = () => {
-    vertexFileInputRef.current?.click();
-  };
-
-  const handleVertexFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.json')) {
-      showNotification(t('vertex_import.file_required'), 'warning');
-      event.target.value = '';
-      return;
-    }
-    setVertexState((prev) => ({
-      ...prev,
-      file,
-      fileName: file.name,
-      error: undefined,
-      result: undefined
-    }));
-    event.target.value = '';
-  };
-
-  const handleVertexImport = async () => {
-    if (!vertexState.file) {
-      const message = t('vertex_import.file_required');
-      setVertexState((prev) => ({ ...prev, error: message }));
-      showNotification(message, 'warning');
-      return;
-    }
-    const location = vertexState.location.trim();
-    setVertexState((prev) => ({ ...prev, loading: true, error: undefined, result: undefined }));
-    try {
-      const res: VertexImportResponse = await vertexApi.importCredential(
-        vertexState.file,
-        location || undefined
-      );
-      const result: VertexImportResult = {
-        projectId: res.project_id,
-        email: res.email,
-        location: res.location,
-        authFile: res['auth-file'] ?? res.auth_file
-      };
-      setVertexState((prev) => ({ ...prev, loading: false, result }));
-      showNotification(t('vertex_import.success'), 'success');
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      setVertexState((prev) => ({
-        ...prev,
-        loading: false,
-        error: message || t('notification.upload_failed')
-      }));
-      const notification = message
-        ? `${t('notification.upload_failed')}: ${message}`
-        : t('notification.upload_failed');
-      showNotification(notification, 'error');
-    }
-  };
-
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>{t('nav.oauth', { defaultValue: 'OAuth' })}</h1>
@@ -390,96 +308,6 @@ export function OAuthPage() {
             </div>
           );
         })}
-
-        {/* Vertex JSON 登录 */}
-        <Card
-          title={
-            <span className={styles.cardTitle}>
-              <img src={iconVertex} alt="" className={styles.cardTitleIcon} />
-              {t('vertex_import.title')}
-            </span>
-          }
-          extra={
-            <Button onClick={handleVertexImport} loading={vertexState.loading}>
-              {t('vertex_import.import_button')}
-            </Button>
-          }
-        >
-          <div className={styles.cardContent}>
-            <div className={styles.cardHint}>{t('vertex_import.description')}</div>
-            <Input
-              label={t('vertex_import.location_label')}
-              hint={t('vertex_import.location_hint')}
-              value={vertexState.location}
-              onChange={(e) =>
-                setVertexState((prev) => ({
-                  ...prev,
-                  location: e.target.value
-                }))
-              }
-              placeholder={t('vertex_import.location_placeholder')}
-            />
-            <div className={styles.formItem}>
-              <label className={styles.formItemLabel}>{t('vertex_import.file_label')}</label>
-              <div className={styles.filePicker}>
-                <Button variant="secondary" size="sm" onClick={handleVertexFilePick}>
-                  {t('vertex_import.choose_file')}
-                </Button>
-                <div
-                  className={`${styles.fileName} ${
-                    vertexState.fileName ? '' : styles.fileNamePlaceholder
-                  }`.trim()}
-                >
-                  {vertexState.fileName || t('vertex_import.file_placeholder')}
-                </div>
-              </div>
-              <div className={styles.cardHintSecondary}>{t('vertex_import.file_hint')}</div>
-              <input
-                ref={vertexFileInputRef}
-                type="file"
-                accept=".json,application/json"
-                style={{ display: 'none' }}
-                onChange={handleVertexFileChange}
-              />
-            </div>
-            {vertexState.error && (
-              <div className="status-badge error">
-                {vertexState.error}
-              </div>
-            )}
-            {vertexState.result && (
-              <div className={styles.connectionBox}>
-                <div className={styles.connectionLabel}>{t('vertex_import.result_title')}</div>
-                <div className={styles.keyValueList}>
-                  {vertexState.result.projectId && (
-                    <div className={styles.keyValueItem}>
-                      <span className={styles.keyValueKey}>{t('vertex_import.result_project')}</span>
-                      <span className={styles.keyValueValue}>{vertexState.result.projectId}</span>
-                    </div>
-                  )}
-                  {vertexState.result.email && (
-                    <div className={styles.keyValueItem}>
-                      <span className={styles.keyValueKey}>{t('vertex_import.result_email')}</span>
-                      <span className={styles.keyValueValue}>{vertexState.result.email}</span>
-                    </div>
-                  )}
-                  {vertexState.result.location && (
-                    <div className={styles.keyValueItem}>
-                      <span className={styles.keyValueKey}>{t('vertex_import.result_location')}</span>
-                      <span className={styles.keyValueValue}>{vertexState.result.location}</span>
-                    </div>
-                  )}
-                  {vertexState.result.authFile && (
-                    <div className={styles.keyValueItem}>
-                      <span className={styles.keyValueKey}>{t('vertex_import.result_file')}</span>
-                      <span className={styles.keyValueValue}>{vertexState.result.authFile}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
 
       </div>
     </div>

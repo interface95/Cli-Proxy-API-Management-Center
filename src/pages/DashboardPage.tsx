@@ -22,7 +22,6 @@ interface QuickStat {
 
 interface ProviderStats {
   gemini: number | null;
-  vertex: number | null;
 }
 
 export function DashboardPage() {
@@ -47,7 +46,6 @@ export function DashboardPage() {
 
   const [providerStats, setProviderStats] = useState<ProviderStats>({
     gemini: null,
-    vertex: null
   });
 
   const [loading, setLoading] = useState(true);
@@ -124,11 +122,10 @@ export function DashboardPage() {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const [keysRes, filesRes, geminiRes, vertexRes] = await Promise.allSettled([
+        const [keysRes, filesRes, geminiRes] = await Promise.allSettled([
           apiKeysApi.list(),
           authFilesApi.list(),
           providersApi.getGeminiKeys(),
-          providersApi.getVertexConfigs()
         ]);
 
         setStats({
@@ -138,7 +135,6 @@ export function DashboardPage() {
 
         setProviderStats({
           gemini: geminiRes.status === 'fulfilled' ? geminiRes.value.length : null,
-          vertex: vertexRes.status === 'fulfilled' ? vertexRes.value.length : null
         });
       } finally {
         setLoading(false);
@@ -154,12 +150,10 @@ export function DashboardPage() {
   }, [connectionStatus, fetchModels]);
 
   // Calculate total provider keys only when all provider stats are available.
-  const providerStatsReady =
-    providerStats.gemini !== null && providerStats.vertex !== null;
-  const hasProviderStats =
-    providerStats.gemini !== null || providerStats.vertex !== null;
+  const providerStatsReady = providerStats.gemini !== null;
+  const hasProviderStats = providerStats.gemini !== null;
   const totalProviderKeys = providerStatsReady
-    ? (providerStats.gemini ?? 0) + (providerStats.vertex ?? 0)
+    ? (providerStats.gemini ?? 0)
     : 0;
 
   const quickStats: QuickStat[] = [
@@ -180,7 +174,6 @@ export function DashboardPage() {
       sublabel: hasProviderStats
         ? t('dashboard.provider_keys_detail', {
             gemini: providerStats.gemini ?? '-',
-            vertex: providerStats.vertex ?? '-'
           })
         : undefined
     },

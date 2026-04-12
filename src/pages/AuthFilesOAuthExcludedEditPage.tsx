@@ -21,7 +21,6 @@ type LocationState = { fromAuthFiles?: boolean } | null;
 
 const OAUTH_PROVIDER_PRESETS = [
   'gemini-cli',
-  'vertex',
   'aistudio',
   'antigravity',
 ];

@@ -45,10 +45,6 @@ export const TYPE_COLORS: Record<string, TypeColorSet> = {
     light: { bg: '#e0f7fa', text: '#006064' },
     dark: { bg: '#004d40', text: '#80deea' }
   },
-  vertex: {
-    light: { bg: '#e8eaf6', text: '#283593' },
-    dark: { bg: '#1a237e', text: '#9fa8da' }
-  },
   unknown: {
     light: { bg: '#f0f0f0', text: '#666666', border: '1px dashed #999999' },
     dark: { bg: '#3a3a3a', text: '#aaaaaa', border: '1px dashed #666666' }

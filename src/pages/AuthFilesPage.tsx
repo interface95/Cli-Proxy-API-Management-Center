@@ -52,7 +52,6 @@ import {
 } from '@/features/authFiles/antigravityTest';
 import iconAntigravity from '@/assets/icons/antigravity.svg';
 import iconGemini from '@/assets/icons/gemini.svg';
-import iconVertex from '@/assets/icons/vertex.svg';
 import { useAuthFilesData } from '@/features/authFiles/hooks/useAuthFilesData';
 import { useAuthFilesModels } from '@/features/authFiles/hooks/useAuthFilesModels';
 import { useAuthFilesOauth } from '@/features/authFiles/hooks/useAuthFilesOauth';
@@ -78,7 +77,6 @@ const AUTH_FILE_FILTER_ICONS: Record<string, string | { light: string; dark: str
   aistudio: iconGemini,
   gemini: iconGemini,
   'gemini-cli': iconGemini,
-  vertex: iconVertex,
 };
 
 const getFilterTagIcon = (type: string, resolvedTheme: ResolvedTheme): string | null => {

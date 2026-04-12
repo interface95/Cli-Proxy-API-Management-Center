@@ -369,7 +369,6 @@ export function UsagePage() {
         usage={filteredUsage}
         loading={loading}
         geminiKeys={config?.geminiApiKeys || []}
-        vertexConfigs={config?.vertexApiKeys || []}
       />
 
       {/* Credential Stats */}
@@ -377,7 +376,6 @@ export function UsagePage() {
         usage={filteredUsage}
         loading={loading}
         geminiKeys={config?.geminiApiKeys || []}
-        vertexConfigs={config?.vertexApiKeys || []}
       />
 
       {/* Price Settings */}

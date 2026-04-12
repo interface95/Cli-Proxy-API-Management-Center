@@ -8,7 +8,7 @@ import {
   normalizeAuthIndex
 } from '@/utils/usage';
 import { authFilesApi } from '@/services/api/authFiles';
-import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
+import type { GeminiKeyConfig } from '@/types';
 import type { AuthFileItem } from '@/types/authFile';
 import type { CredentialInfo } from '@/types/sourceInfo';
 import type { UsagePayload } from './hooks/useUsageData';
@@ -18,7 +18,6 @@ export interface CredentialStatsCardProps {
   usage: UsagePayload | null;
   loading: boolean;
   geminiKeys: GeminiKeyConfig[];
-  vertexConfigs: ProviderKeyConfig[];
 }
 
 interface CredentialRow {
@@ -40,7 +39,6 @@ export function CredentialStatsCard({
   usage,
   loading,
   geminiKeys,
-  vertexConfigs,
 }: CredentialStatsCardProps) {
   const { t } = useTranslation();
   const [authFileMap, setAuthFileMap] = useState<Map<string, CredentialInfo>>(new Map());
@@ -163,8 +161,6 @@ export function CredentialStatsCard({
     // Provider rows — one row per config, stats merged across all its candidate source IDs
     geminiKeys.forEach((c, i) =>
       addConfigRow(c.apiKey, c.prefix, c.prefix?.trim() || `Gemini #${i + 1}`, 'gemini', `gemini:${i}`));
-    vertexConfigs.forEach((c, i) =>
-      addConfigRow(c.apiKey, c.prefix, c.prefix?.trim() || `Vertex #${i + 1}`, 'vertex', `vertex:${i}`));
 
     // Remaining unmatched bySource entries — resolve name from auth files if possible
     Object.entries(bySource).forEach(([key, bucket]) => {
@@ -222,7 +218,7 @@ export function CredentialStatsCard({
     });
 
     return result.sort((a, b) => b.total - a.total);
-  }, [usage, geminiKeys, vertexConfigs, authFileMap]);
+  }, [usage, geminiKeys, authFileMap]);
 
   return (
     <Card title={t('usage_stats.credential_stats')} className={styles.detailsFixedCard}>

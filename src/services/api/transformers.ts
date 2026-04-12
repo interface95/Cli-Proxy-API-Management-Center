@@ -283,13 +283,6 @@ export const normalizeConfigResponse = (raw: unknown): Config => {
       .filter(Boolean) as GeminiKeyConfig[];
   }
 
-  const vertexList = raw['vertex-api-key'] ?? raw.vertexApiKey ?? raw.vertexApiKeys;
-  if (Array.isArray(vertexList)) {
-    config.vertexApiKeys = vertexList
-      .map((item) => normalizeProviderKeyConfig(item))
-      .filter(Boolean) as ProviderKeyConfig[];
-  }
-
   const oauthExcluded = normalizeOauthExcluded(raw['oauth-excluded-models'] ?? raw.oauthExcludedModels);
   if (oauthExcluded) {
     config.oauthExcludedModels = oauthExcluded;

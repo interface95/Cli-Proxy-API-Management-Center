@@ -4,10 +4,9 @@ import { useLocation } from 'react-router-dom';
 import { usePageTransitionLayer } from '@/components/common/PageTransitionLayer';
 import { useThemeStore } from '@/stores';
 import iconGemini from '@/assets/icons/gemini.svg';
-import iconVertex from '@/assets/icons/vertex.svg';
 import styles from './ProviderNav.module.scss';
 
-export type ProviderId = 'gemini' | 'vertex';
+export type ProviderId = 'gemini';
 
 interface ProviderNavItem {
   id: ProviderId;
@@ -17,7 +16,6 @@ interface ProviderNavItem {
 
 const PROVIDERS: ProviderNavItem[] = [
   { id: 'gemini', label: 'Gemini', getIcon: () => iconGemini },
-  { id: 'vertex', label: 'Vertex', getIcon: () => iconVertex },
 ];
 
 const HEADER_OFFSET = 24;
@@ -34,7 +32,6 @@ export function ProviderNav() {
   const navContainerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<ProviderId, HTMLButtonElement | null>>({
     gemini: null,
-    vertex: null,
   });
   const [indicatorRect, setIndicatorRect] = useState<{
     x: number;

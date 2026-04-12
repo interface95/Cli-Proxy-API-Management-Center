@@ -8,7 +8,6 @@ export type AuthFileType =
   | 'gemini-cli'
   | 'aistudio'
   | 'antigravity'
-  | 'vertex'
   | 'empty'
   | 'unknown';
 

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { authFilesApi } from '@/services/api/authFiles';
-import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
+import type { GeminiKeyConfig } from '@/types';
 import type { AuthFileItem } from '@/types/authFile';
 import type { CredentialInfo } from '@/types/sourceInfo';
 import { buildSourceInfoMap, resolveSourceDisplay } from '@/utils/sourceResolver';
@@ -42,7 +42,6 @@ export interface RequestEventsDetailsCardProps {
   usage: unknown;
   loading: boolean;
   geminiKeys: GeminiKeyConfig[];
-  vertexConfigs: ProviderKeyConfig[];
 }
 
 const toNumber = (value: unknown): number => {
@@ -62,7 +61,6 @@ export function RequestEventsDetailsCard({
   usage,
   loading,
   geminiKeys,
-  vertexConfigs
 }: RequestEventsDetailsCardProps) {
   const { t, i18n } = useTranslation();
 
@@ -100,9 +98,8 @@ export function RequestEventsDetailsCard({
     () =>
       buildSourceInfoMap({
         geminiApiKeys: geminiKeys,
-        vertexApiKeys: vertexConfigs,
       }),
-    [geminiKeys, vertexConfigs]
+    [geminiKeys]
   );
 
   const rows = useMemo<RequestEventRow[]>(() => {

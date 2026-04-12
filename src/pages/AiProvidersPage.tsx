@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   GeminiSection,
-  VertexSection,
   ProviderNav,
   useProviderStats,
 } from '@/components/providers';
@@ -14,7 +13,7 @@ import {
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { providersApi } from '@/services/api';
 import { useAuthStore, useConfigStore, useNotificationStore } from '@/stores';
-import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
+import type { GeminiKeyConfig } from '@/types';
 import styles from './AiProvidersPage.module.scss';
 
 export function AiProvidersPage() {
@@ -35,9 +34,6 @@ export function AiProvidersPage() {
 
   const [geminiKeys, setGeminiKeys] = useState<GeminiKeyConfig[]>(
     () => config?.geminiApiKeys || []
-  );
-  const [vertexConfigs, setVertexConfigs] = useState<ProviderKeyConfig[]>(
-    () => config?.vertexApiKeys || []
   );
 
   const [configSwitchingKey, setConfigSwitchingKey] = useState<string | null>(null);
@@ -60,31 +56,15 @@ export function AiProvidersPage() {
     }
     setError('');
     try {
-      const [configResult, vertexResult] = await Promise.allSettled([
-        fetchConfig(),
-        providersApi.getVertexConfigs(),
-      ]);
-
-      if (configResult.status !== 'fulfilled') {
-        throw configResult.reason;
-      }
-
-      const data = configResult.value;
+      const data = await fetchConfig();
       setGeminiKeys(data?.geminiApiKeys || []);
-      setVertexConfigs(data?.vertexApiKeys || []);
-
-      if (vertexResult.status === 'fulfilled') {
-        setVertexConfigs(vertexResult.value || []);
-        updateConfigValue('vertex-api-key', vertexResult.value || []);
-        clearCache('vertex-api-key');
-      }
     } catch (err: unknown) {
       const message = getErrorMessage(err) || t('notification.refresh_failed');
       setError(message);
     } finally {
       setLoading(false);
     }
-  }, [clearCache, fetchConfig, isCacheValid, t, updateConfigValue]);
+  }, [fetchConfig, isCacheValid, t]);
 
   useEffect(() => {
     if (hasMounted.current) return;
@@ -95,8 +75,7 @@ export function AiProvidersPage() {
 
   useEffect(() => {
     if (config?.geminiApiKeys) setGeminiKeys(config.geminiApiKeys);
-    if (config?.vertexApiKeys) setVertexConfigs(config.vertexApiKeys);
-  }, [config?.geminiApiKeys, config?.vertexApiKeys]);
+  }, [config?.geminiApiKeys]);
 
   useHeaderRefresh(refreshKeyStats);
 
@@ -132,103 +111,42 @@ export function AiProvidersPage() {
   };
 
   const setConfigEnabled = async (
-    provider: 'gemini' | 'vertex',
+    _provider: 'gemini',
     index: number,
     enabled: boolean
   ) => {
-    if (provider === 'gemini') {
-      const current = geminiKeys[index];
-      if (!current) return;
-
-      const switchingKey = `${provider}:${current.apiKey}`;
-      setConfigSwitchingKey(switchingKey);
-
-      const previousList = geminiKeys;
-      const nextExcluded = enabled
-        ? withoutDisableAllModelsRule(current.excludedModels)
-        : withDisableAllModelsRule(current.excludedModels);
-      const nextItem: GeminiKeyConfig = { ...current, excludedModels: nextExcluded };
-      const nextList = previousList.map((item, idx) => (idx === index ? nextItem : item));
-
-      setGeminiKeys(nextList);
-      updateConfigValue('gemini-api-key', nextList);
-      clearCache('gemini-api-key');
-
-      try {
-        await providersApi.saveGeminiKeys(nextList);
-        showNotification(
-          enabled ? t('notification.config_enabled') : t('notification.config_disabled'),
-          'success'
-        );
-      } catch (err: unknown) {
-        const message = getErrorMessage(err);
-        setGeminiKeys(previousList);
-        updateConfigValue('gemini-api-key', previousList);
-        clearCache('gemini-api-key');
-        showNotification(`${t('notification.update_failed')}: ${message}`, 'error');
-      } finally {
-        setConfigSwitchingKey(null);
-      }
-      return;
-    }
-
-    // vertex
-    const current = vertexConfigs[index];
+    const current = geminiKeys[index];
     if (!current) return;
 
-    const switchingKey = `${provider}:${current.apiKey}`;
+    const switchingKey = `gemini:${current.apiKey}`;
     setConfigSwitchingKey(switchingKey);
 
-    const previousList = vertexConfigs;
+    const previousList = geminiKeys;
     const nextExcluded = enabled
       ? withoutDisableAllModelsRule(current.excludedModels)
       : withDisableAllModelsRule(current.excludedModels);
-    const nextItem: ProviderKeyConfig = { ...current, excludedModels: nextExcluded };
+    const nextItem: GeminiKeyConfig = { ...current, excludedModels: nextExcluded };
     const nextList = previousList.map((item, idx) => (idx === index ? nextItem : item));
 
-    setVertexConfigs(nextList);
-    updateConfigValue('vertex-api-key', nextList);
-    clearCache('vertex-api-key');
+    setGeminiKeys(nextList);
+    updateConfigValue('gemini-api-key', nextList);
+    clearCache('gemini-api-key');
 
     try {
-      await providersApi.saveVertexConfigs(nextList);
+      await providersApi.saveGeminiKeys(nextList);
       showNotification(
         enabled ? t('notification.config_enabled') : t('notification.config_disabled'),
         'success'
       );
     } catch (err: unknown) {
       const message = getErrorMessage(err);
-      setVertexConfigs(previousList);
-      updateConfigValue('vertex-api-key', previousList);
-      clearCache('vertex-api-key');
+      setGeminiKeys(previousList);
+      updateConfigValue('gemini-api-key', previousList);
+      clearCache('gemini-api-key');
       showNotification(`${t('notification.update_failed')}: ${message}`, 'error');
     } finally {
       setConfigSwitchingKey(null);
     }
-  };
-
-  const deleteVertex = async (index: number) => {
-    const entry = vertexConfigs[index];
-    if (!entry) return;
-    showConfirmation({
-      title: t('ai_providers.vertex_delete_title', { defaultValue: 'Delete Vertex Config' }),
-      message: t('ai_providers.vertex_delete_confirm'),
-      variant: 'danger',
-      confirmText: t('common.confirm'),
-      onConfirm: async () => {
-        try {
-          await providersApi.deleteVertexConfig(entry.apiKey);
-          const next = vertexConfigs.filter((_, idx) => idx !== index);
-          setVertexConfigs(next);
-          updateConfigValue('vertex-api-key', next);
-          clearCache('vertex-api-key');
-          showNotification(t('notification.vertex_config_deleted'), 'success');
-        } catch (err: unknown) {
-          const message = getErrorMessage(err);
-          showNotification(`${t('notification.delete_failed')}: ${message}`, 'error');
-        }
-      },
-    });
   };
 
   return (
@@ -252,20 +170,6 @@ export function AiProvidersPage() {
           />
         </div>
 
-        <div id="provider-vertex">
-          <VertexSection
-            configs={vertexConfigs}
-            keyStats={keyStats}
-            usageDetails={usageDetails}
-            loading={loading}
-            disableControls={disableControls}
-            isSwitching={isSwitching}
-            onAdd={() => openEditor('/ai-providers/vertex/new')}
-            onEdit={(index) => openEditor(`/ai-providers/vertex/${index}`)}
-            onDelete={deleteVertex}
-            onToggle={(index, enabled) => void setConfigEnabled('vertex', index, enabled)}
-          />
-        </div>
 
       </div>
 

@@ -3,7 +3,7 @@
  * 与基线 /config 返回结构保持一致（内部使用驼峰形式）
  */
 
-import type { GeminiKeyConfig, ProviderKeyConfig } from './provider';
+import type { GeminiKeyConfig } from './provider';
 
 export interface QuotaExceededConfig {
   switchProject?: boolean;
@@ -24,7 +24,6 @@ export interface Config {
   routingStrategy?: string;
   apiKeys?: string[];
   geminiApiKeys?: GeminiKeyConfig[];
-  vertexApiKeys?: ProviderKeyConfig[];
   oauthExcludedModels?: Record<string, string[]>;
   raw?: Record<string, unknown>;
 }
@@ -43,7 +42,6 @@ export type RawConfigSection =
   | 'routing/strategy'
   | 'api-keys'
   | 'gemini-api-key'
-  | 'vertex-api-key'
   | 'oauth-excluded-models';
 
 export interface ConfigCache {

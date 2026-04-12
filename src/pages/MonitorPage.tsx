@@ -100,9 +100,8 @@ export function MonitorPage() {
       const typeMap: Record<string, string> = {};
 
       // 并行加载所有提供商配置和认证文件
-      const [geminiKeys, vertexConfigs, authFilesResponse] = await Promise.all([
+      const [geminiKeys, authFilesResponse] = await Promise.all([
         providersApi.getGeminiKeys().catch(() => []),
-        providersApi.getVertexConfigs().catch(() => []),
         authFilesApi.list().catch(() => ({ files: [] })),
       ]);
 
@@ -116,24 +115,6 @@ export function MonitorPage() {
         }
       });
 
-      // 处理 Vertex 提供商
-      vertexConfigs.forEach((config) => {
-        const apiKey = config.apiKey;
-        if (apiKey) {
-          const providerName = config.prefix?.trim() || 'Vertex';
-          map[apiKey] = providerName;
-          typeMap[apiKey] = 'Vertex';
-          if (config.models && config.models.length > 0) {
-            const modelSet = new Set<string>();
-            config.models.forEach((m) => {
-              if (m.alias) modelSet.add(m.alias);
-              if (m.name) modelSet.add(m.name);
-            });
-            modelsMap[apiKey] = modelSet;
-          }
-        }
-      });
-
       setProviderMap(map);
       setProviderModels(modelsMap);
       setProviderTypeMap(typeMap);
@@ -141,7 +122,6 @@ export function MonitorPage() {
       // 构建 sourceInfoMap（与请求事件明细相同的解析逻辑）
       setSourceInfoMap(buildSourceInfoMap({
         geminiApiKeys: geminiKeys,
-        vertexApiKeys: vertexConfigs,
       }));
 
       // 构建 authFileMap（认证文件索引 → 凭证信息）

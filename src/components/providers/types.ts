@@ -1,4 +1,4 @@
-import type { ApiKeyEntry, GeminiKeyConfig, ProviderKeyConfig } from '@/types';
+import type { ApiKeyEntry, GeminiKeyConfig } from '@/types';
 import type { HeaderEntry } from '@/utils/headers';
 import type { KeyStats, UsageDetail } from '@/utils/usage';
 
@@ -19,18 +19,6 @@ export interface OpenAIFormState {
 }
 
 export type GeminiFormState = Omit<GeminiKeyConfig, 'headers' | 'models'> & {
-  headers: HeaderEntry[];
-  modelEntries: ModelEntry[];
-  excludedText: string;
-};
-
-export type ProviderFormState = Omit<ProviderKeyConfig, 'headers'> & {
-  headers: HeaderEntry[];
-  modelEntries: ModelEntry[];
-  excludedText: string;
-};
-
-export type VertexFormState = Omit<ProviderKeyConfig, 'headers'> & {
   headers: HeaderEntry[];
   modelEntries: ModelEntry[];
   excludedText: string;
