@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  AmpcodeSection,
   GeminiSection,
   VertexSection,
   ProviderNav,
@@ -13,7 +12,7 @@ import {
   withoutDisableAllModelsRule,
 } from '@/components/providers/utils';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
-import { ampcodeApi, providersApi } from '@/services/api';
+import { providersApi } from '@/services/api';
 import { useAuthStore, useConfigStore, useNotificationStore } from '@/stores';
 import type { GeminiKeyConfig, ProviderKeyConfig } from '@/types';
 import styles from './AiProvidersPage.module.scss';
@@ -61,10 +60,9 @@ export function AiProvidersPage() {
     }
     setError('');
     try {
-      const [configResult, vertexResult, ampcodeResult] = await Promise.allSettled([
+      const [configResult, vertexResult] = await Promise.allSettled([
         fetchConfig(),
         providersApi.getVertexConfigs(),
-        ampcodeApi.getAmpcode(),
       ]);
 
       if (configResult.status !== 'fulfilled') {
@@ -79,11 +77,6 @@ export function AiProvidersPage() {
         setVertexConfigs(vertexResult.value || []);
         updateConfigValue('vertex-api-key', vertexResult.value || []);
         clearCache('vertex-api-key');
-      }
-
-      if (ampcodeResult.status === 'fulfilled') {
-        updateConfigValue('ampcode', ampcodeResult.value);
-        clearCache('ampcode');
       }
     } catch (err: unknown) {
       const message = getErrorMessage(err) || t('notification.refresh_failed');
@@ -274,15 +267,6 @@ export function AiProvidersPage() {
           />
         </div>
 
-        <div id="provider-ampcode">
-          <AmpcodeSection
-            config={config?.ampcode}
-            loading={loading}
-            disableControls={disableControls}
-            isSwitching={isSwitching}
-            onEdit={() => openEditor('/ai-providers/ampcode')}
-          />
-        </div>
       </div>
 
       <ProviderNav />

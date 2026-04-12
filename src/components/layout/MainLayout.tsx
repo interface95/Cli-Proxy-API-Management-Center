@@ -471,7 +471,6 @@ export function MainLayout() {
       if (normalizedPath.startsWith('/ai-providers/')) {
         if (normalizedPath.startsWith('/ai-providers/gemini')) return aiProvidersIndex + 0.1;
         if (normalizedPath.startsWith('/ai-providers/vertex')) return aiProvidersIndex + 0.2;
-        if (normalizedPath.startsWith('/ai-providers/ampcode')) return aiProvidersIndex + 0.3;
         return aiProvidersIndex + 0.05;
       }
     }

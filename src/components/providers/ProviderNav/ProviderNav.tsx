@@ -5,10 +5,9 @@ import { usePageTransitionLayer } from '@/components/common/PageTransitionLayer'
 import { useThemeStore } from '@/stores';
 import iconGemini from '@/assets/icons/gemini.svg';
 import iconVertex from '@/assets/icons/vertex.svg';
-import iconAmp from '@/assets/icons/amp.svg';
 import styles from './ProviderNav.module.scss';
 
-export type ProviderId = 'gemini' | 'vertex' | 'ampcode';
+export type ProviderId = 'gemini' | 'vertex';
 
 interface ProviderNavItem {
   id: ProviderId;
@@ -19,7 +18,6 @@ interface ProviderNavItem {
 const PROVIDERS: ProviderNavItem[] = [
   { id: 'gemini', label: 'Gemini', getIcon: () => iconGemini },
   { id: 'vertex', label: 'Vertex', getIcon: () => iconVertex },
-  { id: 'ampcode', label: 'Ampcode', getIcon: () => iconAmp },
 ];
 
 const HEADER_OFFSET = 24;
@@ -37,7 +35,6 @@ export function ProviderNav() {
   const itemRefs = useRef<Record<ProviderId, HTMLButtonElement | null>>({
     gemini: null,
     vertex: null,
-    ampcode: null,
   });
   const [indicatorRect, setIndicatorRect] = useState<{
     x: number;

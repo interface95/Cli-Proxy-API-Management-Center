@@ -1,4 +1,3 @@
-export { AmpcodeSection } from './AmpcodeSection';
 export { GeminiSection } from './GeminiSection';
 export { VertexSection } from './VertexSection';
 export { ProviderList } from './ProviderList';
