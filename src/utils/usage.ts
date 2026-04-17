@@ -44,6 +44,7 @@ export interface UsageDetail {
     output_tokens: number;
     reasoning_tokens: number;
     cached_tokens: number;
+    cache_creation_tokens?: number;
     cache_tokens?: number;
     total_tokens: number;
   };

@@ -1350,6 +1350,8 @@
       "header_count": "请求数",
       "header_input": "输入",
       "header_output": "输出",
+      "header_cache_read": "缓存读",
+      "header_cache_creation": "缓存写",
       "header_total": "总 Token",
       "header_time": "时间",
       "header_actions": "操作",

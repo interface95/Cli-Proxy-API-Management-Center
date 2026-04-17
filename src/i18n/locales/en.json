@@ -1350,6 +1350,8 @@
       "header_count": "Requests",
       "header_input": "Input",
       "header_output": "Output",
+      "header_cache_read": "Cache Read",
+      "header_cache_creation": "Cache Write",
       "header_total": "Total Tokens",
       "header_time": "Time",
       "header_actions": "Actions",

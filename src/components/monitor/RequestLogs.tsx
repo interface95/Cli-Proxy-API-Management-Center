@@ -45,6 +45,8 @@ interface LogEntry {
   failed: boolean;
   inputTokens: number;
   outputTokens: number;
+  cachedTokens: number;
+  cacheCreationTokens: number;
   totalTokens: number;
   authIndex: string;
 }
@@ -280,6 +282,8 @@ export function RequestLogs({ data, loading: parentLoading, providerMap, provide
             failed: detail.failed,
             inputTokens: detail.tokens.input_tokens || 0,
             outputTokens: detail.tokens.output_tokens || 0,
+            cachedTokens: detail.tokens.cached_tokens || 0,
+            cacheCreationTokens: detail.tokens.cache_creation_tokens || 0,
             totalTokens: detail.tokens.total_tokens || 0,
             authIndex: detail.auth_index || '',
           });
@@ -454,6 +458,8 @@ export function RequestLogs({ data, loading: parentLoading, providerMap, provide
         <td>{formatNumber(stats.totalCount)}</td>
         <td>{formatNumber(entry.inputTokens)}</td>
         <td>{formatNumber(entry.outputTokens)}</td>
+        <td>{formatNumber(entry.cachedTokens)}</td>
+        <td>{formatNumber(entry.cacheCreationTokens)}</td>
         <td>{formatNumber(entry.totalTokens)}</td>
         <td>{formatTimestamp(entry.timestamp)}</td>
         <td>
@@ -595,6 +601,8 @@ export function RequestLogs({ data, loading: parentLoading, providerMap, provide
                       <th>{t('monitor.logs.header_count')}</th>
                       <th>{t('monitor.logs.header_input')}</th>
                       <th>{t('monitor.logs.header_output')}</th>
+                      <th>{t('monitor.logs.header_cache_read')}</th>
+                      <th>{t('monitor.logs.header_cache_creation')}</th>
                       <th>{t('monitor.logs.header_total')}</th>
                       <th>{t('monitor.logs.header_time')}</th>
                       <th>{t('monitor.logs.header_actions')}</th>
