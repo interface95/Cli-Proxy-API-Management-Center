@@ -139,8 +139,8 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
   const ratioPercent = Math.round(values.cacheBoostTargetRatio * 100);
   const creationPercent = Math.round(values.cacheBoostCreationRatio * 100);
   const controlsDisabled = disabled || !values.cacheBoostEnabled;
-  // Combined cap mirrors backend clamp (read + creation ≤ 0.95)
-  const creationMax = Math.max(0, Math.min(0.95, 0.95 - values.cacheBoostTargetRatio));
+  // Combined cap mirrors backend clamp (read + creation ≤ 0.99)
+  const creationMax = Math.max(0, Math.min(0.99, 0.99 - values.cacheBoostTargetRatio));
 
   return (
     <ConfigSection
@@ -164,8 +164,8 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
               id={sliderId}
               type="range"
               min={0}
-              max={0.95}
-              step={0.05}
+              max={0.99}
+              step={0.01}
               value={values.cacheBoostTargetRatio}
               disabled={controlsDisabled}
               onChange={(e) =>
@@ -197,7 +197,7 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
               type="range"
               min={0}
               max={creationMax}
-              step={0.05}
+              step={0.01}
               value={Math.min(values.cacheBoostCreationRatio, creationMax)}
               disabled={controlsDisabled}
               onChange={(e) =>

@@ -79,7 +79,7 @@ function parseStringArray(raw: unknown): string[] {
 function clampCacheRatio(n: number): number {
   if (!Number.isFinite(n)) return 0.8;
   if (n < 0) return 0;
-  if (n > 0.95) return 0.95;
+  if (n > 0.99) return 0.99;
   return n;
 }
 
@@ -786,8 +786,8 @@ export function useVisualConfig() {
             ['cache-boost', 'target-cache-ratio'],
             clampCacheRatio(values.cacheBoostTargetRatio)
           );
-          // Honor backend cap: cache + creation ≤ 0.95
-          const creationMax = Math.max(0, 0.95 - clampCacheRatio(values.cacheBoostTargetRatio));
+          // Honor backend cap: cache + creation ≤ 0.99
+          const creationMax = Math.max(0, 0.99 - clampCacheRatio(values.cacheBoostTargetRatio));
           const creationRatio = Math.max(0, Math.min(creationMax, values.cacheBoostCreationRatio));
           if (creationRatio > 0) {
             doc.setIn(['cache-boost', 'target-creation-ratio'], creationRatio);
