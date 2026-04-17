@@ -24,6 +24,7 @@ export function RestoreModal({ open, onClose, onRestore, loading, filename }: Re
 
   // 每次打开弹窗时重置为默认值
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setScope({ localStorage: true, config: false, usage: true });
   }, [open]);
 

@@ -38,6 +38,7 @@ export function RestoreCard() {
 
   // 初始加载 + 备份成功后自动刷新列表
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh, lastBackupTime]);
 
