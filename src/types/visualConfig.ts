@@ -82,9 +82,15 @@ export type VisualConfigValues = {
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   routingStrategy: 'round-robin' | 'fill-first';
+  stickySessionId: boolean;
+  stickyTtlSeconds: string;
   antigravityCreditsMode: AntigravityCreditsMode;
   antigravityBaseURLMode: AntigravityBaseURLMode;
   antigravityCustomBaseURLs: string[];
+  cacheBoostEnabled: boolean;
+  cacheBoostTargetRatio: number;
+  cacheBoostExemptAPIKeys: string;
+  cacheBoostExemptModels: string;
   wsAuth: boolean;
   payloadDefaultRules: PayloadRule[];
   payloadOverrideRules: PayloadRule[];
@@ -121,9 +127,15 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   routingStrategy: 'round-robin',
+  stickySessionId: true,
+  stickyTtlSeconds: '',
   antigravityCreditsMode: 'off',
   antigravityBaseURLMode: 'auto',
   antigravityCustomBaseURLs: [],
+  cacheBoostEnabled: false,
+  cacheBoostTargetRatio: 0.8,
+  cacheBoostExemptAPIKeys: '',
+  cacheBoostExemptModels: '',
   wsAuth: false,
   payloadDefaultRules: [],
   payloadOverrideRules: [],

@@ -1,9 +1,11 @@
-import { useCallback, useId, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { ConfigSection } from '@/components/config/ConfigSection';
+import { cacheBoostApi, type CacheBoostStats } from '@/services/api/cacheBoost';
 import type {
   PayloadFilterRule,
   PayloadParamValidationErrorCode,
@@ -81,6 +83,179 @@ function SectionGrid({ children }: { children: ReactNode }) {
 
 function Divider() {
   return <div style={{ height: 1, background: 'var(--border-color)', margin: '16px 0' }} />;
+}
+
+interface CacheBoostSectionProps {
+  values: VisualConfigValues;
+  disabled: boolean;
+  onChange: (values: Partial<VisualConfigValues>) => void;
+}
+
+function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProps) {
+  const { t } = useTranslation();
+  const sliderId = useId();
+  const exemptKeysId = useId();
+  const exemptModelsId = useId();
+  const [stats, setStats] = useState<CacheBoostStats | null>(null);
+  const [resetting, setResetting] = useState(false);
+
+  useEffect(() => {
+    if (!values.cacheBoostEnabled) {
+      setStats(null);
+      return;
+    }
+    let cancelled = false;
+    const load = () => {
+      cacheBoostApi
+        .get()
+        .then((r) => {
+          if (!cancelled) setStats(r.stats);
+        })
+        .catch(() => {
+          /* silently ignore — backend may be offline */
+        });
+    };
+    load();
+    const id = window.setInterval(load, 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [values.cacheBoostEnabled]);
+
+  const handleResetStats = useCallback(async () => {
+    setResetting(true);
+    try {
+      await cacheBoostApi.resetStats();
+      setStats({ processed: 0, boosted: 0, suppressed: 0, passthrough: 0 });
+    } catch {
+      /* ignore */
+    } finally {
+      setResetting(false);
+    }
+  }, []);
+
+  const ratioPercent = Math.round(values.cacheBoostTargetRatio * 100);
+  const controlsDisabled = disabled || !values.cacheBoostEnabled;
+
+  return (
+    <ConfigSection
+      title={t('config_management.visual.sections.cache_boost.title')}
+      description={t('config_management.visual.sections.cache_boost.description')}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <ToggleRow
+          title={t('config_management.visual.sections.cache_boost.enabled')}
+          checked={values.cacheBoostEnabled}
+          disabled={disabled}
+          onChange={(cacheBoostEnabled) => onChange({ cacheBoostEnabled })}
+        />
+
+        <div className="form-group">
+          <label htmlFor={sliderId}>
+            {t('config_management.visual.sections.cache_boost.target_ratio')}
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              id={sliderId}
+              type="range"
+              min={0}
+              max={0.95}
+              step={0.05}
+              value={values.cacheBoostTargetRatio}
+              disabled={controlsDisabled}
+              onChange={(e) =>
+                onChange({ cacheBoostTargetRatio: Number(e.target.value) })
+              }
+              style={{ flex: 1 }}
+            />
+            <span
+              style={{
+                minWidth: 52,
+                textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+              }}
+            >
+              {ratioPercent}%
+            </span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor={exemptKeysId}>
+            {t('config_management.visual.sections.cache_boost.exempt_api_keys')}
+          </label>
+          <textarea
+            id={exemptKeysId}
+            className="input"
+            rows={3}
+            placeholder="sk-admin-*"
+            value={values.cacheBoostExemptAPIKeys}
+            disabled={controlsDisabled}
+            onChange={(e) => onChange({ cacheBoostExemptAPIKeys: e.target.value })}
+            style={{ fontFamily: 'var(--font-mono, monospace)', resize: 'vertical' }}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor={exemptModelsId}>
+            {t('config_management.visual.sections.cache_boost.exempt_models')}
+          </label>
+          <textarea
+            id={exemptModelsId}
+            className="input"
+            rows={3}
+            placeholder="gpt-oss-*"
+            value={values.cacheBoostExemptModels}
+            disabled={controlsDisabled}
+            onChange={(e) => onChange({ cacheBoostExemptModels: e.target.value })}
+            style={{ fontFamily: 'var(--font-mono, monospace)', resize: 'vertical' }}
+          />
+        </div>
+
+        {stats && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              flexWrap: 'wrap',
+              paddingTop: 12,
+              borderTop: '1px solid var(--border-color)',
+            }}
+          >
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+              {t('config_management.visual.sections.cache_boost.stats_processed')}:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>{stats.processed}</strong>
+            </span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+              {t('config_management.visual.sections.cache_boost.stats_boosted')}:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>{stats.boosted}</strong>
+            </span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+              {t('config_management.visual.sections.cache_boost.stats_suppressed')}:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>{stats.suppressed}</strong>
+            </span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+              {t('config_management.visual.sections.cache_boost.stats_passthrough')}:{' '}
+              <strong style={{ color: 'var(--text-primary)' }}>{stats.passthrough}</strong>
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={resetting}
+              loading={resetting}
+              onClick={handleResetStats}
+            >
+              {t('config_management.visual.sections.cache_boost.reset_stats')}
+            </Button>
+          </div>
+        )}
+      </div>
+    </ConfigSection>
+  );
 }
 
 export function VisualConfigEditor({ values, validationErrors, disabled = false, onChange }: VisualConfigEditorProps) {
@@ -344,6 +519,22 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
             disabled={disabled}
             onChange={(wsAuth) => onChange({ wsAuth })}
           />
+          <ToggleRow
+            title={t('config_management.visual.sections.network.sticky_session_id')}
+            description={t('config_management.visual.sections.network.sticky_session_id_desc')}
+            checked={values.stickySessionId}
+            disabled={disabled}
+            onChange={(stickySessionId) => onChange({ stickySessionId })}
+          />
+          <Input
+            label={t('config_management.visual.sections.network.sticky_ttl_seconds')}
+            type="number"
+            placeholder="1800"
+            value={values.stickyTtlSeconds}
+            onChange={(e) => onChange({ stickyTtlSeconds: e.target.value })}
+            disabled={disabled}
+            hint={t('config_management.visual.sections.network.sticky_ttl_seconds_hint')}
+          />
         </div>
       </ConfigSection>
 
@@ -506,6 +697,8 @@ export function VisualConfigEditor({ values, validationErrors, disabled = false,
           )}
         </div>
       </ConfigSection>
+
+      <CacheBoostSection values={values} disabled={disabled} onChange={onChange} />
 
       <ConfigSection title={t('config_management.visual.sections.streaming.title')} description={t('config_management.visual.sections.streaming.description')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

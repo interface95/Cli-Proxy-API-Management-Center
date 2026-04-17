@@ -11,3 +11,5 @@ export * from './logs';
 export * from './version';
 export * from './models';
 export * from './transformers';
+export * from './proxyPool';
+export * from './cacheBoost';

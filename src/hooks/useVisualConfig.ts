@@ -53,6 +53,36 @@ function parseAntigravityBaseURLMode(raw: unknown): AntigravityBaseURLMode | und
   return undefined;
 }
 
+function parseNumberValue(raw: unknown): number | undefined {
+  if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return undefined;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function parseStringArray(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      const trimmed = item.trim();
+      if (trimmed) out.push(trimmed);
+    }
+  }
+  return out;
+}
+
+function clampCacheRatio(n: number): number {
+  if (!Number.isFinite(n)) return 0.8;
+  if (n < 0) return 0;
+  if (n > 0.95) return 0.95;
+  return n;
+}
+
 function parseAntigravityCustomBaseURLs(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
@@ -518,6 +548,7 @@ export function useVisualConfig() {
       const quotaExceeded = asRecord(parsed['quota-exceeded']);
       const routing = asRecord(parsed.routing);
       const antigravity = asRecord(parsed.antigravity);
+      const cacheBoost = asRecord(parsed['cache-boost']);
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
       const apiKeysStorage = resolveApiKeysStorage(parsed);
@@ -575,10 +606,19 @@ export function useVisualConfig() {
 
         routingStrategy:
           routing?.strategy === 'fill-first' ? 'fill-first' : 'round-robin',
+        stickySessionId: parseBooleanValue(routing?.['sticky-session-id']) ?? true,
+        stickyTtlSeconds: String(routing?.['sticky-ttl-seconds'] ?? ''),
 
         antigravityCreditsMode,
         antigravityBaseURLMode,
         antigravityCustomBaseURLs,
+
+        cacheBoostEnabled: parseBooleanValue(cacheBoost?.['enabled']) ?? false,
+        cacheBoostTargetRatio: clampCacheRatio(
+          parseNumberValue(cacheBoost?.['target-cache-ratio']) ?? 0.8
+        ),
+        cacheBoostExemptAPIKeys: parseStringArray(cacheBoost?.['exempt-api-keys']).join('\n'),
+        cacheBoostExemptModels: parseStringArray(cacheBoost?.['exempt-models']).join('\n'),
 
         payloadDefaultRules: parsePayloadRules(payload?.default),
         payloadOverrideRules: parsePayloadRules(payload?.override),
@@ -731,6 +771,42 @@ export function useVisualConfig() {
         }
 
         if (
+          docHas(doc, ['cache-boost']) ||
+          values.cacheBoostEnabled ||
+          values.cacheBoostExemptAPIKeys.trim() ||
+          values.cacheBoostExemptModels.trim()
+        ) {
+          ensureMapInDoc(doc, ['cache-boost']);
+          doc.setIn(['cache-boost', 'enabled'], values.cacheBoostEnabled);
+          doc.setIn(
+            ['cache-boost', 'target-cache-ratio'],
+            clampCacheRatio(values.cacheBoostTargetRatio)
+          );
+
+          const exemptKeys = values.cacheBoostExemptAPIKeys
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          if (exemptKeys.length > 0) {
+            doc.setIn(['cache-boost', 'exempt-api-keys'], exemptKeys);
+          } else if (docHas(doc, ['cache-boost', 'exempt-api-keys'])) {
+            doc.deleteIn(['cache-boost', 'exempt-api-keys']);
+          }
+
+          const exemptModels = values.cacheBoostExemptModels
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          if (exemptModels.length > 0) {
+            doc.setIn(['cache-boost', 'exempt-models'], exemptModels);
+          } else if (docHas(doc, ['cache-boost', 'exempt-models'])) {
+            doc.deleteIn(['cache-boost', 'exempt-models']);
+          }
+
+          deleteIfMapEmpty(doc, ['cache-boost']);
+        }
+
+        if (
           docHas(doc, ['quota-exceeded']) ||
           !values.quotaSwitchProject ||
           !values.quotaSwitchPreviewModel
@@ -744,9 +820,20 @@ export function useVisualConfig() {
           deleteIfMapEmpty(doc, ['quota-exceeded']);
         }
 
-        if (docHas(doc, ['routing']) || values.routingStrategy !== 'round-robin') {
+        if (docHas(doc, ['routing']) || values.routingStrategy !== 'round-robin' || !values.stickySessionId || values.stickyTtlSeconds) {
           ensureMapInDoc(doc, ['routing']);
           doc.setIn(['routing', 'strategy'], values.routingStrategy);
+          if (!values.stickySessionId) {
+            doc.setIn(['routing', 'sticky-session-id'], false);
+          } else {
+            doc.deleteIn(['routing', 'sticky-session-id']);
+          }
+          const ttlNum = parseInt(values.stickyTtlSeconds, 10);
+          if (values.stickyTtlSeconds && !isNaN(ttlNum) && ttlNum > 0) {
+            doc.setIn(['routing', 'sticky-ttl-seconds'], ttlNum);
+          } else {
+            doc.deleteIn(['routing', 'sticky-ttl-seconds']);
+          }
           deleteIfMapEmpty(doc, ['routing']);
         }
 
