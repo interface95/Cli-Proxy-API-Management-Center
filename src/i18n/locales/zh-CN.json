@@ -1014,6 +1014,8 @@
           "description": "把响应里的 cache 命中率拉向目标值（客户端账单可见）。默认关闭，可按 API Key 或模型豁免。",
           "enabled": "启用缓存补偿",
           "target_ratio": "目标命中率",
+          "target_creation_ratio": "合成增量缓存占比",
+          "target_creation_ratio_hint": "仅对 Claude 且总 prompt ≥ 1024 时生效；Antigravity 等上游不报 cache_creation 时用来虚构增量。0 = 不合成",
           "exempt_api_keys": "豁免 API Keys（每行一个，支持 sk-admin-* 通配）",
           "exempt_models": "豁免模型（每行一个前缀，支持 gpt-oss-* 通配）",
           "stats_processed": "处理",

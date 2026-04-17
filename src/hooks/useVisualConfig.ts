@@ -617,6 +617,9 @@ export function useVisualConfig() {
         cacheBoostTargetRatio: clampCacheRatio(
           parseNumberValue(cacheBoost?.['target-cache-ratio']) ?? 0.8
         ),
+        cacheBoostCreationRatio: clampCacheRatio(
+          parseNumberValue(cacheBoost?.['target-creation-ratio']) ?? 0
+        ),
         cacheBoostExemptAPIKeys: parseStringArray(cacheBoost?.['exempt-api-keys']).join('\n'),
         cacheBoostExemptModels: parseStringArray(cacheBoost?.['exempt-models']).join('\n'),
 
@@ -773,6 +776,7 @@ export function useVisualConfig() {
         if (
           docHas(doc, ['cache-boost']) ||
           values.cacheBoostEnabled ||
+          values.cacheBoostCreationRatio > 0 ||
           values.cacheBoostExemptAPIKeys.trim() ||
           values.cacheBoostExemptModels.trim()
         ) {
@@ -782,6 +786,14 @@ export function useVisualConfig() {
             ['cache-boost', 'target-cache-ratio'],
             clampCacheRatio(values.cacheBoostTargetRatio)
           );
+          // Honor backend cap: cache + creation ≤ 0.95
+          const creationMax = Math.max(0, 0.95 - clampCacheRatio(values.cacheBoostTargetRatio));
+          const creationRatio = Math.max(0, Math.min(creationMax, values.cacheBoostCreationRatio));
+          if (creationRatio > 0) {
+            doc.setIn(['cache-boost', 'target-creation-ratio'], creationRatio);
+          } else if (docHas(doc, ['cache-boost', 'target-creation-ratio'])) {
+            doc.deleteIn(['cache-boost', 'target-creation-ratio']);
+          }
 
           const exemptKeys = values.cacheBoostExemptAPIKeys
             .split('\n')

@@ -1014,6 +1014,8 @@
           "description": "Pull response cache-hit ratio toward a target value (visible to downstream billing). Disabled by default; exempt by API key or model.",
           "enabled": "Enable cache boost",
           "target_ratio": "Target hit ratio",
+          "target_creation_ratio": "Synthesized cache-creation ratio",
+          "target_creation_ratio_hint": "Only applies to Claude when total prompt ≥ 1024 tokens. Fabricates cache_creation_input_tokens for channels (e.g. Antigravity) whose upstream doesn't report it. 0 = disabled",
           "exempt_api_keys": "Exempt API keys (one per line, trailing * wildcard)",
           "exempt_models": "Exempt models (one prefix per line, trailing * wildcard)",
           "stats_processed": "Processed",

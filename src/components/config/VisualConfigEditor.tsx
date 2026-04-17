@@ -94,6 +94,7 @@ interface CacheBoostSectionProps {
 function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProps) {
   const { t } = useTranslation();
   const sliderId = useId();
+  const creationSliderId = useId();
   const exemptKeysId = useId();
   const exemptModelsId = useId();
   const [stats, setStats] = useState<CacheBoostStats | null>(null);
@@ -136,7 +137,10 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
   }, []);
 
   const ratioPercent = Math.round(values.cacheBoostTargetRatio * 100);
+  const creationPercent = Math.round(values.cacheBoostCreationRatio * 100);
   const controlsDisabled = disabled || !values.cacheBoostEnabled;
+  // Combined cap mirrors backend clamp (read + creation ≤ 0.95)
+  const creationMax = Math.max(0, Math.min(0.95, 0.95 - values.cacheBoostTargetRatio));
 
   return (
     <ConfigSection
@@ -181,6 +185,41 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
               {ratioPercent}%
             </span>
           </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor={creationSliderId}>
+            {t('config_management.visual.sections.cache_boost.target_creation_ratio')}
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              id={creationSliderId}
+              type="range"
+              min={0}
+              max={creationMax}
+              step={0.05}
+              value={Math.min(values.cacheBoostCreationRatio, creationMax)}
+              disabled={controlsDisabled}
+              onChange={(e) =>
+                onChange({ cacheBoostCreationRatio: Number(e.target.value) })
+              }
+              style={{ flex: 1 }}
+            />
+            <span
+              style={{
+                minWidth: 52,
+                textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+              }}
+            >
+              {creationPercent}%
+            </span>
+          </div>
+          <small style={{ color: 'var(--text-tertiary)' }}>
+            {t('config_management.visual.sections.cache_boost.target_creation_ratio_hint')}
+          </small>
         </div>
 
         <div className="form-group">

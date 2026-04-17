@@ -89,6 +89,7 @@ export type VisualConfigValues = {
   antigravityCustomBaseURLs: string[];
   cacheBoostEnabled: boolean;
   cacheBoostTargetRatio: number;
+  cacheBoostCreationRatio: number;
   cacheBoostExemptAPIKeys: string;
   cacheBoostExemptModels: string;
   wsAuth: boolean;
@@ -134,6 +135,7 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   antigravityCustomBaseURLs: [],
   cacheBoostEnabled: false,
   cacheBoostTargetRatio: 0.8,
+  cacheBoostCreationRatio: 0,
   cacheBoostExemptAPIKeys: '',
   cacheBoostExemptModels: '',
   wsAuth: false,
