@@ -51,41 +51,41 @@ export const ANTIGRAVITY_REQUEST_HEADERS = {
 
 export const ANTIGRAVITY_QUOTA_GROUPS: AntigravityQuotaGroupDefinition[] = [
   {
-    id: 'claude-gpt',
-    label: 'Claude/GPT',
-    identifiers: ['claude-sonnet-4-6', 'claude-opus-4-6-thinking', 'gpt-oss-120b-medium'],
+    // Claude + GPT share a billing bucket upstream.
+    id: 'claude',
+    label: 'Claude',
+    identifiers: [
+      'claude-sonnet-4-6',
+      'claude-opus-4-6-thinking',
+      'claude-opus-4-7-thinking',
+      'gpt-oss-120b-medium',
+    ],
   },
   {
-    // 3-pro high/low share a quota pool; kept separate from 3.1-pro
-    // because upstream treats them as independent budgets.
-    id: 'gemini-3-pro',
-    label: 'Gemini 3 Pro',
-    identifiers: ['gemini-3-pro-high', 'gemini-3-pro-low'],
+    // All Pro variants (3-pro + 3.1-pro, high/low) share one pool.
+    id: 'gemini-pro',
+    label: 'Gemini Pro',
+    identifiers: [
+      'gemini-3-pro-high',
+      'gemini-3-pro-low',
+      'gemini-3.1-pro-high',
+      'gemini-3.1-pro-low',
+    ],
   },
   {
-    // 3.1-pro high/low share a quota pool; independent from 3-pro.
-    id: 'gemini-3-1-pro-series',
-    label: 'Gemini 3.1 Pro Series',
-    identifiers: ['gemini-3.1-pro-high', 'gemini-3.1-pro-low'],
+    // All non-image Flash variants share one pool (2.5 flash family + 3-flash).
+    id: 'gemini-flash',
+    label: 'Gemini Flash',
+    identifiers: [
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-thinking',
+      'gemini-2.5-flash-lite',
+      'gemini-3-flash',
+    ],
   },
   {
-    // 2.5 flash family (flash / flash-thinking / flash-lite) share a pool.
-    id: 'gemini-2-5-flash-series',
-    label: 'Gemini 2.5 Flash Series',
-    identifiers: ['gemini-2.5-flash', 'gemini-2.5-flash-thinking', 'gemini-2.5-flash-lite'],
-  },
-  {
-    id: 'gemini-2-5-cu',
-    label: 'Gemini 2.5 CU',
-    identifiers: ['rev19-uic3-1p'],
-  },
-  {
-    id: 'gemini-3-flash',
-    label: 'Gemini 3 Flash',
-    identifiers: ['gemini-3-flash'],
-  },
-  {
-    id: 'gemini-image',
+    // Image generation is a separate quota and bills differently.
+    id: 'gemini-3-1-flash-image',
     label: 'gemini-3.1-flash-image',
     identifiers: ['gemini-3.1-flash-image'],
     labelFromModel: true,
