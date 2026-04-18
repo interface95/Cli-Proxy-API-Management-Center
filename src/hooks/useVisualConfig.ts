@@ -83,6 +83,13 @@ function clampCacheRatio(n: number): number {
   return n;
 }
 
+function clampJitter(n: number): number {
+  if (!Number.isFinite(n)) return 0;
+  if (n < 0) return 0;
+  if (n > 0.5) return 0.5;
+  return n;
+}
+
 function parseAntigravityCustomBaseURLs(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
@@ -620,6 +627,12 @@ export function useVisualConfig() {
         cacheBoostCreationRatio: clampCacheRatio(
           parseNumberValue(cacheBoost?.['target-creation-ratio']) ?? 0
         ),
+        cacheBoostJitterRead: clampJitter(
+          parseNumberValue(cacheBoost?.['jitter-read']) ?? 0.15
+        ),
+        cacheBoostJitterCreation: clampJitter(
+          parseNumberValue(cacheBoost?.['jitter-creation']) ?? 0.35
+        ),
         cacheBoostExemptAPIKeys: parseStringArray(cacheBoost?.['exempt-api-keys']).join('\n'),
         cacheBoostExemptModels: parseStringArray(cacheBoost?.['exempt-models']).join('\n'),
 
@@ -794,6 +807,8 @@ export function useVisualConfig() {
           } else if (docHas(doc, ['cache-boost', 'target-creation-ratio'])) {
             doc.deleteIn(['cache-boost', 'target-creation-ratio']);
           }
+          doc.setIn(['cache-boost', 'jitter-read'], clampJitter(values.cacheBoostJitterRead));
+          doc.setIn(['cache-boost', 'jitter-creation'], clampJitter(values.cacheBoostJitterCreation));
 
           const exemptKeys = values.cacheBoostExemptAPIKeys
             .split('\n')

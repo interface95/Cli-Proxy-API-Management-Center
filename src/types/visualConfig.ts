@@ -90,6 +90,8 @@ export type VisualConfigValues = {
   cacheBoostEnabled: boolean;
   cacheBoostTargetRatio: number;
   cacheBoostCreationRatio: number;
+  cacheBoostJitterRead: number;
+  cacheBoostJitterCreation: number;
   cacheBoostExemptAPIKeys: string;
   cacheBoostExemptModels: string;
   wsAuth: boolean;
@@ -136,6 +138,8 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   cacheBoostEnabled: false,
   cacheBoostTargetRatio: 0.8,
   cacheBoostCreationRatio: 0,
+  cacheBoostJitterRead: 0.15,
+  cacheBoostJitterCreation: 0.35,
   cacheBoostExemptAPIKeys: '',
   cacheBoostExemptModels: '',
   wsAuth: false,

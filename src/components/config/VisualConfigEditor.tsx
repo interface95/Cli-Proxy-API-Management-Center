@@ -95,6 +95,8 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
   const { t } = useTranslation();
   const sliderId = useId();
   const creationSliderId = useId();
+  const jitterReadSliderId = useId();
+  const jitterCreationSliderId = useId();
   const exemptKeysId = useId();
   const exemptModelsId = useId();
   const [stats, setStats] = useState<CacheBoostStats | null>(null);
@@ -138,6 +140,8 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
 
   const ratioPercent = Math.round(values.cacheBoostTargetRatio * 100);
   const creationPercent = Math.round(values.cacheBoostCreationRatio * 100);
+  const jitterReadPercent = Math.round(values.cacheBoostJitterRead * 100);
+  const jitterCreationPercent = Math.round(values.cacheBoostJitterCreation * 100);
   const controlsDisabled = disabled || !values.cacheBoostEnabled;
   // Combined cap mirrors backend clamp (read + creation ≤ 0.99)
   const creationMax = Math.max(0, Math.min(0.99, 0.99 - values.cacheBoostTargetRatio));
@@ -219,6 +223,69 @@ function CacheBoostSection({ values, disabled, onChange }: CacheBoostSectionProp
           </div>
           <small style={{ color: 'var(--text-tertiary)' }}>
             {t('config_management.visual.sections.cache_boost.target_creation_ratio_hint')}
+          </small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor={jitterReadSliderId}>
+            {t('config_management.visual.sections.cache_boost.jitter_read')}
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              id={jitterReadSliderId}
+              type="range"
+              min={0}
+              max={0.5}
+              step={0.01}
+              value={values.cacheBoostJitterRead}
+              disabled={controlsDisabled}
+              onChange={(e) => onChange({ cacheBoostJitterRead: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <span
+              style={{
+                minWidth: 56,
+                textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+              }}
+            >
+              ±{jitterReadPercent}%
+            </span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor={jitterCreationSliderId}>
+            {t('config_management.visual.sections.cache_boost.jitter_creation')}
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input
+              id={jitterCreationSliderId}
+              type="range"
+              min={0}
+              max={0.5}
+              step={0.01}
+              value={values.cacheBoostJitterCreation}
+              disabled={controlsDisabled}
+              onChange={(e) => onChange({ cacheBoostJitterCreation: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <span
+              style={{
+                minWidth: 56,
+                textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+              }}
+            >
+              ±{jitterCreationPercent}%
+            </span>
+          </div>
+          <small style={{ color: 'var(--text-tertiary)' }}>
+            {t('config_management.visual.sections.cache_boost.jitter_hint')}
           </small>
         </div>
 
