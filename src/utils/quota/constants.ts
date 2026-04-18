@@ -56,19 +56,20 @@ export const ANTIGRAVITY_QUOTA_GROUPS: AntigravityQuotaGroupDefinition[] = [
     identifiers: ['claude-sonnet-4-6', 'claude-opus-4-6-thinking', 'gpt-oss-120b-medium'],
   },
   {
-    // Upstream shares the same per-account budget across 3.x pro variants,
-    // so collapse them into a single quota group.
-    id: 'gemini-pro-series',
-    label: 'Gemini Pro Series',
-    identifiers: [
-      'gemini-3-pro-high',
-      'gemini-3-pro-low',
-      'gemini-3.1-pro-high',
-      'gemini-3.1-pro-low',
-    ],
+    // 3-pro high/low share a quota pool; kept separate from 3.1-pro
+    // because upstream treats them as independent budgets.
+    id: 'gemini-3-pro',
+    label: 'Gemini 3 Pro',
+    identifiers: ['gemini-3-pro-high', 'gemini-3-pro-low'],
   },
   {
-    // Collapse 2.5 flash + flash-lite under one card to mirror upstream billing.
+    // 3.1-pro high/low share a quota pool; independent from 3-pro.
+    id: 'gemini-3-1-pro-series',
+    label: 'Gemini 3.1 Pro Series',
+    identifiers: ['gemini-3.1-pro-high', 'gemini-3.1-pro-low'],
+  },
+  {
+    // 2.5 flash family (flash / flash-thinking / flash-lite) share a pool.
     id: 'gemini-2-5-flash-series',
     label: 'Gemini 2.5 Flash Series',
     identifiers: ['gemini-2.5-flash', 'gemini-2.5-flash-thinking', 'gemini-2.5-flash-lite'],
